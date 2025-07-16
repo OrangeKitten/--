@@ -486,7 +486,8 @@ void NuPlayer::setDataSourceAsync(
     msg->setObject("source", source);
     msg->post();
 }
-```setDataSourceAsync
+```
+
 #### GenericSource.cpp setDataSource
 ```c++
 status_t NuPlayer::GenericSource::setDataSource(
@@ -611,7 +612,132 @@ sequenceDiagram
 你不能让总厨直接去前台接待顾客，否则厨房就没人干活了，整个餐厅也会陷入混乱。同理，NuPlayer也不能直接去响应Binder调用。
 #### 遗留
 接下来会对AMessage与ALooper写一篇分析文章
-### PrepareAsync/Prepare
+### prepareAsync/prepare
+#### android_media_MediaPlayer_prepareAsync  prepareAsync
+```c++
+static void
+android_media_MediaPlayer_prepareAsync(JNIEnv *env, jobject thiz)
+{
+    sp<MediaPlayer> mp = getMediaPlayer(env, thiz);
+    // Handle the case where the display surface was set before the mp was
+    // initialized. We try again to make it stick.
+    sp<IGraphicBufferProducer> st = getVideoSurfaceTexture(env, thiz);
+    mp->setVideoSurfaceTexture(st);
+    process_media_player_call( env, thiz, mp->prepareAsync(), "java/io/IOException", "Prepare Async failed." );
+}
+```
+#### mediaplayer.cpp prepareAsync
+```c++
+status_t MediaPlayer::prepareAsync()
+{
+    ALOGV("prepareAsync");
+    Mutex::Autolock _l(mLock);
+    return prepareAsync_l();
+}
+status_t MediaPlayer::prepareAsync_l()
+{
+    //setDataSource过程中会把状态设置为MEDIA_PLAYER_INITIALIZED
+    if ( (mPlayer != 0) && ( mCurrentState & (MEDIA_PLAYER_INITIALIZED | MEDIA_PLAYER_STOPPED) ) ) {
+        if (mAudioAttributesParcel != NULL) {
+            mPlayer->setParameter(KEY_PARAMETER_AUDIO_ATTRIBUTES, *mAudioAttributesParcel);
+        } else {
+            //默认AUDIO_STREAM_MUSIC,设置到了AudioOutput中
+            mPlayer->setAudioStreamType(mStreamType);
+        }
+        mCurrentState = MEDIA_PLAYER_PREPARING;
+        return mPlayer->prepareAsync();
+    }
+    ALOGE("prepareAsync called in state %d, mPlayer(%p)", mCurrentState, mPlayer.get());
+    return INVALID_OPERATION;
+}
+```
+#### MediaPlayerService.cpp  prepareAsync
+```c++
+status_t MediaPlayerService::Client::prepareAsync()
+{
+    ALOGV("[%d] prepareAsync", mConnId);
+    sp<MediaPlayerBase> p = getPlayer();
+    if (p == 0) return UNKNOWN_ERROR;
+    status_t ret = p->prepareAsync();
+#if CALLBACK_ANTAGONIZER
+    ALOGD("start Antagonizer");
+    if (ret == NO_ERROR) mAntagonizer->start();
+#endif
+    return ret;
+}
+```
+#### NuPlayerDriver.cpp prepareAsync
+```c++
+status_t NuPlayerDriver::prepareAsync() {
+    //与setDataSource不同这块没有使用while开始等待
+    ALOGV("prepareAsync(%p)", this);
+    Mutex::Autolock autoLock(mLock);
+
+    switch (mState) {
+        case STATE_UNPREPARED:
+            mState = STATE_PREPARING;
+            mIsAsyncPrepare = true;
+            mPlayer->prepareAsync();
+            return OK;
+        case STATE_STOPPED:
+            // this is really just paused. handle as seek to start
+            mAtEOS = false;
+            mState = STATE_STOPPED_AND_PREPARING;
+            mIsAsyncPrepare = true;
+            mPlayer->seekToAsync(0, MediaPlayerSeekMode::SEEK_PREVIOUS_SYNC /* mode */,
+                    true /* needNotify */);
+            return OK;
+        default:
+            return INVALID_OPERATION;
+    };
+}
+```
+#### NuPlayer.cpp prepareAsync
+```c++
+void NuPlayer::prepareAsync() {
+    ALOGV("prepareAsync");
+    //可以看到在NuPlayer做了异步操作
+    (new AMessage(kWhatPrepare, this))->post();
+}
+void NuPlayer::onMessageReceived(const sp<AMessage> &msg) {
+    switch (msg->what()) {
+        
+        case kWhatPrepare:
+        {
+            ALOGV("onMessageReceived kWhatPrepare");
+
+            mSource->prepareAsync();
+            break;
+        }
+    }
+}
+```
+#### GenericSource.cpp prepareAsync
+```c++
+void NuPlayer::GenericSource::prepareAsync() {
+  Mutex::Autolock _l(mLock);
+  ALOGV("prepareAsync: (looper: %d)", (mLooper != NULL));
+
+  if (fe == NULL) {
+    mLooper = new ALooper;
+    mLooper->setName("generic");
+    mLooper->start();
+
+    mLooper->registerHandler(this);
+  }
+
+  sp<AMessage> msg = new AMessage(kWhatPrepareAsync, this);
+  msg->post();
+}
+void NuPlayer::GenericSource::onMessageReceived(const sp<AMessage> &msg) {
+  Mutex::Autolock _l(mLock);
+  switch (msg->what()) {
+  case kWhatPrepareAsync: {
+    onPrepareAsync();
+    break;
+  }}
+}
+```
 ### Start
 ### Pause/Stop
 ### Release
