@@ -737,7 +737,249 @@ void NuPlayer::GenericSource::onMessageReceived(const sp<AMessage> &msg) {
     break;
   }}
 }
+
+void NuPlayer::GenericSource::onPrepareAsync() {
+
+  // 延迟创建数据源（如果数据源还未创建）使用 网址或者本地路径都是没有创建数据源的
+  if (mDataSource == NULL) {
+    // 初始设置为非安全，如果提取器返回安全标志，再设为true
+    mIsSecure = false;
+
+    // 从URI创建数据源（通常是HTTP/HTTPS流媒体或本地文件URI）
+    if (!mUri.empty()) {
+      const char *uri = mUri.c_str();
+      String8 contentType;
+      // 处理HTTP/HTTPS流媒体
+      if (!strncasecmp("http://", uri, 7) || !strncasecmp("https://", uri, 8)) {
+        sp<DataSource> httpSource;
+        // 创建HTTP数据源
+        httpSource =
+            PlayerServiceDataSourceFactory::getInstance()->CreateMediaHTTP(
+                mHTTPService);
+        // 如果在创建过程中没有断开连接，保存HTTP源
+        if (!mDisconnected) {
+          mHttpSource = httpSource;
+        }
+      }
+      // 从URI创建数据源（可能耗时较长，特别是网络连接不稳定时）
+      // 这里的mHttpSource并不是最终用于解码的“数据源”，而是作为底层HTTP连接的实现对象（HTTPBase），
+      // 真正的DataSource（如NuCachedSource2）会基于这个HTTPBase对象进行缓存和数据读取等高级操作。
+      // 因此，这里需要通过CreateFromURI再创建一层“包装”后的DataSource，供后续Extractor等模块使用。
+      sp<DataSource> dataSource =
+          PlayerServiceDataSourceFactory::getInstance()->CreateFromURI(
+              mHTTPService, uri, &mUriHeaders, &contentType,
+              static_cast<HTTPBase *>(mHttpSource.get()));
+      if (!mDisconnected) {
+        mDataSource = dataSource;  // 设置数据源
+      }
+    } else {
+      // 处理文件描述符（fd）方式的数据源
+
+      if (property_get_bool("media.stagefright.extractremote", true) &&
+          !PlayerServiceFileSource::requiresDrm(mFd.get(), mOffset, mLength,
+                                                nullptr /* mime */)) {
+        // 尝试获取媒体提取器服务
+        sp<IBinder> binder =
+            defaultServiceManager()->getService(String16("media.extractor"));
+
+          ALOGD("FileSource remote");  // 使用远程提取器
+          // 获取媒体提取器服务接口
+          sp<IMediaExtractorService> mediaExService(
+              interface_cast<IMediaExtractorService>(binder));
+          sp<IDataSource> source;
+          // 通过提取器服务创建IDataSource
+          mediaExService->makeIDataSource(base::unique_fd(dup(mFd.get())),
+                                          mOffset, mLength, &source);
+            mDataSource = CreateDataSourceFromIDataSource(source);
+      }
+      // 如果远程提取器失败或不可用，创建本地文件源
+      if (mDataSource == nullptr) {
+        ALOGD("FileSource local");  // 使用本地文件源
+        mDataSource =
+            new PlayerServiceFileSource(dup(mFd.get()), mOffset, mLength);
+      }
+    }
+
+  }
+
+
+  // 从数据源初始化提取器（这里进行实际的媒体解析，包括获取通道信息等元数据）
+  status_t err = initFromDataSource();
+  // 处理视频轨道信息（如果存在）
+  if (mVideoTrack.mSource != NULL) {
+    // 获取视频格式元数据
+    sp<MetaData> meta = getFormatMeta_l(false /* audio */);
+    sp<AMessage> msg = new AMessage;
+    // 将元数据转换为消息格式
+    err = convertMetaDataToMessage(meta, &msg);
+    // 通知视频尺寸变化（向上层报告视频分辨率信息）
+    notifyVideoSizeChanged(msg);
+  }
+
+  // 设置播放器能力标志
+  uint32_t flags = FLAG_CAN_PAUSE | FLAG_CAN_SEEK_BACKWARD |
+                   FLAG_CAN_SEEK_FORWARD | FLAG_CAN_SEEK;
+                   
+  // 检查是否为VBR（可变比特率）音频，设置动态时长标志
+  if (mExtractor != NULL) {
+    sp<MetaData> meta = mExtractor->getMetaData();
+    if (meta != NULL) {
+      int32_t isVBR = 0;
+      if (meta->findInt32('iVbr', &isVBR) && isVBR != 0) {
+        ALOGV("Is VBR");  // 是可变比特率
+        mIsDynamicDuration = true;
+        flags |= FLAG_DYNAMIC_DURATION;  // 设置动态时长标志
+      }
+    }
+  }
+
+  // FLAG_SECURE 和 FLAG_PROTECTED 将在应用调用 prepareDrm 时确定
+  
+  // 检查提取器是否支持跳转
+  if (!(mExtractor->flags() & FLAG_CAN_SEEK)) {
+    flags &= ~FLAG_CAN_SEEK;  // 清除跳转标志
+  }
+  // 通知标志变更
+  notifyFlagsChanged(flags);
+  // 完成异步准备过程
+  finishPrepareAsync();
+  ALOGV("onPrepareAsync: Done");  // 异步准备完成
+}
+
+status_t NuPlayer::GenericSource::initFromDataSource() {
+  sp<IMediaExtractor> extractor;
+  sp<DataSource> dataSource;
+  {
+    Mutex::Autolock _l_d(mDisconnectLock);
+    dataSource = mDataSource;
+  }
+  CHECK(dataSource != NULL);
+
+  mLock.unlock();
+  // This might take long time if data source is not reliable.
+  extractor = MediaExtractorFactory::Create(dataSource, NULL);
+
+  // 这一步（sp<MetaData> fileMeta = extractor->getMetaData();）并没有真正进行demux（分离音视频轨道数据），
+  // 它只是从extractor（提取器）对象中获取文件级别的元数据（如时长、格式等）。
+  // 真正的demux操作是在后续遍历extractor->countTracks()和extractor->getTrack(i)时，
+  // 才会将音频、视频、字幕等轨道的信息和数据分离出来。
+  sp<MetaData> fileMeta = extractor->getMetaData();
+
+  size_t numtracks = extractor->countTracks();
+  if (numtracks == 0) {
+    ALOGE("initFromDataSource, source has no track!");
+    mLock.lock();
+    return UNKNOWN_ERROR;
+  }
+
+  mLock.lock();
+  mFileMeta = fileMeta;
+  if (mFileMeta != NULL) {
+    int64_t duration;
+    if (mFileMeta->findInt64(kKeyDuration, &duration)) {
+      mDurationUs = duration;
+    }
+  }
+
+  int32_t totalBitrate = 0;
+
+  mMimes.clear();
+
+  for (size_t i = 0; i < numtracks; ++i) {
+    sp<IMediaSource> track = extractor->getTrack(i);
+    if (track == NULL) {
+      continue;
+    }
+
+    sp<MetaData> meta = extractor->getTrackMetaData(i);
+    if (meta == NULL) {
+      ALOGE("no metadata for track %zu", i);
+      return UNKNOWN_ERROR;
+    }
+
+    const char *mime;
+    CHECK(meta->findCString(kKeyMIMEType, &mime));
+
+    ALOGV("initFromDataSource track[%zu]: %s", i, mime);
+
+    // Do the string compare immediately with "mime",
+    // we can't assume "mime" would stay valid after another
+    // extractor operation, some extractors might modify meta
+    // during getTrack() and make it invalid.
+    if (!strncasecmp(mime, "audio/", 6)) {
+      if (mAudioTrack.mSource == NULL) {
+        mAudioTrack.mIndex = i;
+        mAudioTrack.mSource = track;
+        mAudioTrack.mPackets =
+            new AnotherPacketSource(mAudioTrack.mSource->getFormat());
+
+        if (!strcasecmp(mime, MEDIA_MIMETYPE_AUDIO_VORBIS)) {
+          mAudioIsVorbis = true;
+        } else {
+          mAudioIsVorbis = false;
+        }
+
+        mMimes.add(String8(mime));
+      }
+    } else if (!strncasecmp(mime, "video/", 6)) {
+      if (mVideoTrack.mSource == NULL) {
+        mVideoTrack.mIndex = i;
+        mVideoTrack.mSource = track;
+        mVideoTrack.mPackets =
+            new AnotherPacketSource(mVideoTrack.mSource->getFormat());
+
+        // video always at the beginning
+        mMimes.insertAt(String8(mime), 0);
+      }
+    } else if (!strcmp(mime, MEDIA_MIMETYPE_TEXT_3GPP) ||
+               !strcmp(mime, MEDIA_MIMETYPE_TEXT_SUBRIP)) {
+      if (mSubtitleTrack.mSource == NULL) {
+        ALOGD("Add subtitle track");
+        mSubtitleTrack.mIndex = i;
+        mSubtitleTrack.mSource = track;
+        mSubtitleTrack.mPackets =
+            new AnotherPacketSource(mSubtitleTrack.mSource->getFormat());
+
+        mMimes.add(String8(mime));
+      }
+    }
+
+    mSources.push(track);
+    int64_t durationUs;
+    if (meta->findInt64(kKeyDuration, &durationUs)) {
+      if (durationUs > mDurationUs) {
+        mDurationUs = durationUs;
+      }
+    }
+
+    int32_t bitrate;
+    if (totalBitrate >= 0 && meta->findInt32(kKeyBitRate, &bitrate)) {
+      totalBitrate += bitrate;
+    } else {
+      totalBitrate = -1;
+    }
+  }
+
+  ALOGV("initFromDataSource mSources.size(): %zu  mIsSecure: %d  mime[0]: %s",
+        mSources.size(), mIsSecure,
+        (mMimes.isEmpty() ? "NONE" : mMimes[0].string()));
+
+  if (mSources.size() == 0) {
+    ALOGE("b/23705695");
+    return UNKNOWN_ERROR;
+  }
+
+  // Modular DRM: The return value doesn't affect source initialization.
+  (void)checkDrmInfo();
+
+  mBitrate = totalBitrate;
+  mExtractor = extractor;
+  return OK;
+}
 ```
+#### 总结 
+在GenericSource.cpp onPrepareAsync完成了真正的soureData的创建，数据源支持HTTP/HTTPS/本地路径/fd情况
+在initFromDataSource中对数据demux
 ### Start
 ### Pause/Stop
 ### Release
