@@ -31,7 +31,8 @@
 上面就是使用MediaPlayer API的简化的播放流程。MediaPlayer是支持同步准备的，该代码使用了异步准备，目的是为了不会卡住UI，当准备完成之后会触发MediaPlayer中的函数OnPreparedListener，然后开始播放。
 有AudioTrack的播放流程不同的是，不需要write。数据的读写都是MediaPlayer控制，这大大减少了APP的开发难度
 接下来我们就按照播放流程来分析MediaServer的控制流。
-## 控制流
+## 状态图
+![MediaPlayer状态图](mediapalyer状态图.png)
 ### New MeidaPlayer
 ```java
 MediaPlayer.java
@@ -592,11 +593,9 @@ sequenceDiagram
     NPD->>MP: 返回结果
     MP->>App: 返回结果
 ```
-#### 思考
+##### 思考
 ##### 为什么要有一个NuPlayerDriver类，直接使用NuPlay不行吗
 总结：为什么必须分离？
-### 总结：为什么必须分离？
-
 如果将 `NuPlayerDriver` 和 `NuPlayer` 合并成一个类，会带来灾难性的后果：
 
 | 方面 | 分离式设计 (Driver + Player) | 合并式设计 (只有一个Player) |
@@ -641,7 +640,7 @@ status_t MediaPlayer::prepareAsync_l()
         if (mAudioAttributesParcel != NULL) {
             mPlayer->setParameter(KEY_PARAMETER_AUDIO_ATTRIBUTES, *mAudioAttributesParcel);
         } else {
-            //默认AUDIO_STREAM_MUSIC,设置到了AudioOutput中
+            //默认AUDIO_STREAM_MUSIC,设置到了AudioOutput中,这个AudioOutput是MediaPlayerService.h中的一个类
             mPlayer->setAudioStreamType(mStreamType);
         }
         mCurrentState = MEDIA_PLAYER_PREPARING;
@@ -839,148 +838,297 @@ void NuPlayer::GenericSource::onPrepareAsync() {
   if (!(mExtractor->flags() & FLAG_CAN_SEEK)) {
     flags &= ~FLAG_CAN_SEEK;  // 清除跳转标志
   }
-  // 通知标志变更
+  // 通知标志变更 更新NuPlayterDriver的状态
   notifyFlagsChanged(flags);
   // 完成异步准备过程
   finishPrepareAsync();
   ALOGV("onPrepareAsync: Done");  // 异步准备完成
 }
 
+
 status_t NuPlayer::GenericSource::initFromDataSource() {
-  sp<IMediaExtractor> extractor;
-  sp<DataSource> dataSource;
-  {
-    Mutex::Autolock _l_d(mDisconnectLock);
-    dataSource = mDataSource;
-  }
-  CHECK(dataSource != NULL);
+    //1.创建extractor
+    extractor = MediaExtractorFactory::Create(dataSource, NULL);
+    //2.获取meta数据 用来获取duration
+    sp<MetaData> fileMeta = extractor->getMetaData();
 
-  mLock.unlock();
-  // This might take long time if data source is not reliable.
-  extractor = MediaExtractorFactory::Create(dataSource, NULL);
+    //3. 获取音视频轨道数量,包括音频轨道(如AAC/MP3)和视频轨道(如H264/HEVC)
+    size_t numtracks = extractor->countTracks();
 
-  // 这一步（sp<MetaData> fileMeta = extractor->getMetaData();）并没有真正进行demux（分离音视频轨道数据），
-  // 它只是从extractor（提取器）对象中获取文件级别的元数据（如时长、格式等）。
-  // 真正的demux操作是在后续遍历extractor->countTracks()和extractor->getTrack(i)时，
-  // 才会将音频、视频、字幕等轨道的信息和数据分离出来。
-  sp<MetaData> fileMeta = extractor->getMetaData();
-
-  size_t numtracks = extractor->countTracks();
-  if (numtracks == 0) {
-    ALOGE("initFromDataSource, source has no track!");
-    mLock.lock();
-    return UNKNOWN_ERROR;
-  }
-
-  mLock.lock();
-  mFileMeta = fileMeta;
-  if (mFileMeta != NULL) {
-    int64_t duration;
-    if (mFileMeta->findInt64(kKeyDuration, &duration)) {
-      mDurationUs = duration;
-    }
-  }
-
-  int32_t totalBitrate = 0;
-
-  mMimes.clear();
-
-  for (size_t i = 0; i < numtracks; ++i) {
-    sp<IMediaSource> track = extractor->getTrack(i);
-    if (track == NULL) {
-      continue;
-    }
-
-    sp<MetaData> meta = extractor->getTrackMetaData(i);
-    if (meta == NULL) {
-      ALOGE("no metadata for track %zu", i);
-      return UNKNOWN_ERROR;
-    }
-
-    const char *mime;
-    CHECK(meta->findCString(kKeyMIMEType, &mime));
-
-    ALOGV("initFromDataSource track[%zu]: %s", i, mime);
-
-    // Do the string compare immediately with "mime",
-    // we can't assume "mime" would stay valid after another
-    // extractor operation, some extractors might modify meta
-    // during getTrack() and make it invalid.
-    if (!strncasecmp(mime, "audio/", 6)) {
-      if (mAudioTrack.mSource == NULL) {
-        mAudioTrack.mIndex = i;
-        mAudioTrack.mSource = track;
-        mAudioTrack.mPackets =
-            new AnotherPacketSource(mAudioTrack.mSource->getFormat());
-
-        if (!strcasecmp(mime, MEDIA_MIMETYPE_AUDIO_VORBIS)) {
-          mAudioIsVorbis = true;
-        } else {
-          mAudioIsVorbis = false;
+    mFileMeta = fileMeta;
+    if (mFileMeta != NULL) {
+        int64_t duration;
+        if (mFileMeta->findInt64(kKeyDuration, &duration)) {
+            mDurationUs = duration;
         }
-
-        mMimes.add(String8(mime));
-      }
-    } else if (!strncasecmp(mime, "video/", 6)) {
-      if (mVideoTrack.mSource == NULL) {
-        mVideoTrack.mIndex = i;
-        mVideoTrack.mSource = track;
-        mVideoTrack.mPackets =
-            new AnotherPacketSource(mVideoTrack.mSource->getFormat());
-
-        // video always at the beginning
-        mMimes.insertAt(String8(mime), 0);
-      }
-    } else if (!strcmp(mime, MEDIA_MIMETYPE_TEXT_3GPP) ||
-               !strcmp(mime, MEDIA_MIMETYPE_TEXT_SUBRIP)) {
-      if (mSubtitleTrack.mSource == NULL) {
-        ALOGD("Add subtitle track");
-        mSubtitleTrack.mIndex = i;
-        mSubtitleTrack.mSource = track;
-        mSubtitleTrack.mPackets =
-            new AnotherPacketSource(mSubtitleTrack.mSource->getFormat());
-
-        mMimes.add(String8(mime));
-      }
     }
 
-    mSources.push(track);
-    int64_t durationUs;
-    if (meta->findInt64(kKeyDuration, &durationUs)) {
-      if (durationUs > mDurationUs) {
-        mDurationUs = durationUs;
-      }
+    int32_t totalBitrate = 0;
+    //4. 记录AVTrack 的信息到mSource中
+    for (size_t i = 0; i < numtracks; ++i) {
+        sp<IMediaSource> track = extractor->getTrack(i);
+        sp<MetaData> meta = extractor->getTrackMetaData(i);
+// mime保存的数据为 audio/aac   video/mp4  image/jpeg这种
+        const char *mime;
+        CHECK(meta->findCString(kKeyMIMEType, &mime));
+        // 只保存第一个音频轨道和视频轨道的原因:
+        // 1. Android MediaPlayer默认只支持同时播放一个音频和一个视频轨道
+        // 2. 如果有多个音视频轨道,只选择第一个作为默认播放轨道
+        // 3. 后续可以通过selectTrack()接口切换到其他轨道播放
+        if (!strncasecmp(mime, "audio/", 6)) {
+            // mAudioTrack.mSource为空表示还未设置过音频轨道
+            if (mAudioTrack.mSource == NULL) {
+                mAudioTrack.mIndex = i;
+                mAudioTrack.mSource = track;
+                mAudioTrack.mPackets =
+                    new AnotherPacketSource(mAudioTrack.mSource->getFormat());
+
+                // 判断音频编码格式是否为Vorbis格式
+                // strcasecmp用于比较两个字符串,忽略大小写
+                // MEDIA_MIMETYPE_AUDIO_VORBIS 定义为 "audio/vorbis"
+                // Vorbis是一种开源的音频压缩编码格式,常用于OGG容器格式
+                if (!strcasecmp(mime, MEDIA_MIMETYPE_AUDIO_VORBIS)) {
+                    mAudioIsVorbis = true;
+                } else {
+                    mAudioIsVorbis = false;
+                }
+
+                mMimes.add(String8(mime));
+            }
+            // 如果mAudioTrack.mSource不为空,表示已经设置过音频轨道,则忽略后续的音频轨道
+        } else if (!strncasecmp(mime, "video/", 6)) {
+            // mVideoTrack.mSource为空表示还未设置过视频轨道
+            if (mVideoTrack.mSource == NULL) {
+                mVideoTrack.mIndex = i;
+                mVideoTrack.mSource = track;
+                mVideoTrack.mPackets =
+                    new AnotherPacketSource(mVideoTrack.mSource->getFormat());
+
+                // video always at the beginning
+                mMimes.insertAt(String8(mime), 0);
+            }
+            // 如果mVideoTrack.mSource不为空,表示已经设置过视频轨道,则忽略后续的视频轨道
+        }
+        mSources.push(track);
+        int64_t durationUs;
+        if (meta->findInt64(kKeyDuration, &durationUs)) {
+            if (durationUs > mDurationUs) {
+                mDurationUs = durationUs;
+            }
+        }
+        int32_t bitrate;
+        if (totalBitrate >= 0 && meta->findInt32(kKeyBitRate, &bitrate)) {
+            totalBitrate += bitrate;
+        } else {
+            totalBitrate = -1;
+        }
     }
+    mBitrate = totalBitrate;
 
-    int32_t bitrate;
-    if (totalBitrate >= 0 && meta->findInt32(kKeyBitRate, &bitrate)) {
-      totalBitrate += bitrate;
-    } else {
-      totalBitrate = -1;
-    }
-  }
-
-  ALOGV("initFromDataSource mSources.size(): %zu  mIsSecure: %d  mime[0]: %s",
-        mSources.size(), mIsSecure,
-        (mMimes.isEmpty() ? "NONE" : mMimes[0].string()));
-
-  if (mSources.size() == 0) {
-    ALOGE("b/23705695");
-    return UNKNOWN_ERROR;
-  }
-
-  // Modular DRM: The return value doesn't affect source initialization.
-  (void)checkDrmInfo();
-
-  mBitrate = totalBitrate;
-  mExtractor = extractor;
-  return OK;
+    return OK;
 }
 ```
+```mermaid
+graph TD
+    A[GenericSource::initFromDataSource] --> B[MediaExtractorFactory::Create]
+    B --> C[根据媒体类型创建不同的Extractor]
+    C --> D1[MPEG4Extractor]
+    C --> D2[AACExtractor]
+    C --> D3[AMRExtractor]
+    C --> D4[其他Extractor...]
+    D1 --> E[extractor->getTrack]
+    D2 --> E
+    D3 --> E
+    D4 --> E
+    E --> F[返回具体的MediaSource实现]
+```
+```c++
+
+void NuPlayer::GenericSource::finishPrepareAsync() { 
+    // 启动音视频数据源，主要就是向MediaBufferGroup申请buffer
+    status_t err = startSources();
+
+    // 如果是流媒体数据
+    if (mIsStreaming) {
+        // 恢复缓存源的数据获取
+        mCachedSource->resumeFetchingIfNecessary();
+        // 设置准备状态标志,表示正在准备中
+        mPreparing = true;
+        // 调度缓冲区轮询
+        // 对于流媒体数据,需要等待缓冲足够的数据才能通知准备完成
+        // 在onPollBuffering()中会检查缓冲进度
+        // 当缓冲达到要求时会调用notifyPrepared()通知准备完成
+        schedulePollBuffering();
+    } else {
+        // 非流媒体直接通知准备完成,通知app当前是MEDIA_PREPARED状态
+        notifyPrepared();
+    }
+
+    // 如果存在音频轨道,发送读取音频数据的消息
+    if (mAudioTrack.mSource != NULL) {
+        postReadBuffer(MEDIA_TRACK_TYPE_AUDIO);
+    }
+
+    // 如果存在视频轨道,发送读取视频数据的消息 
+    if (mVideoTrack.mSource != NULL) {
+        postReadBuffer(MEDIA_TRACK_TYPE_VIDEO);
+    }
+}
+```
+##### 问题schedulePollBuffering 是判断缓冲数据是否足够，但是都没有调用postReadBuffer如何判断呢
+流媒体情况下，都没有开始调用postReadBuffer怎么判断数据是否足够呢？
+这是一个关键点：
+- 顺序很重要：finishPrepareAsync()中，首先调用startSources()分配缓冲区，然后对于流媒体调用schedulePollBuffering()，最后才调用postReadBuffer()开始读取
+- 并行机制：postReadBuffer和schedulePollBuffering建立了两个并行工作的机制：
+postReadBuffer → readBuffer → 快速读取数据并判断
+schedulePollBuffering → onPollBuffering → 定期检查整体缓冲状态
+- 判断时机：第一次判断缓冲是否足够发生在第一轮readBuffer执行时，而不是在postReadBuffer之前
+读取驱动缓冲：系统设计为"先读取，再判断"而不是"先判断，再读取"，因为必须先读取一些数据才能判断缓冲是否足够
+所以，初始时并不需要提前判断数据是否足够，而是通过读取数据的过程来累积和判断缓冲状态。
+** 也就是说最开始通知app 当前准备好是readBuffer流程通知的，然后在onPollBuffering做定期检查状态，如果遇到缓冲区数据不够就会通知当前数据加载了多少**
+```c++
+status_t NuPlayer::GenericSource::startSources() {
+    // 在开始缓冲之前启动选定的音视频轨道
+    // 这里先启动音视频轨道的原因是:
+    // 1. 历史原因:以前的Widevine DRM源在start()时可能会重新初始化加密,如果延迟到start()再启动,
+    //    prepare期间缓冲的数据就会浪费掉
+    // 2. 虽然现在已经移除了Widevine支持,但这个逻辑仍然保留
+    // 注意:这里只是启动轨道,还没有开始实际读取数据,读取要等到start()时才开始
+    
+    // 启动音频轨道
+    if (mAudioTrack.mSource != NULL && mAudioTrack.mSource->start() != OK) {
+        ALOGE("failed to start audio track!"); // 启动音频轨道失败
+        return UNKNOWN_ERROR;
+    }
+
+    // 启动视频轨道 
+    if (mVideoTrack.mSource != NULL && mVideoTrack.mSource->start() != OK) {
+        ALOGE("failed to start video track!"); // 启动视频轨道失败
+        return UNKNOWN_ERROR;
+    }
+
+    return OK;
+}
+```
+```mermaid
+sequenceDiagram
+    participant GS as GenericSource
+    participant Source as 媒体源
+    participant NuP as NuPlayer
+
+    GS->>GS: finishPrepareAsync()
+    GS->>Source: startSources()
+    Note over Source: 分配缓冲区
+    
+    alt 流媒体
+        GS->>GS: schedulePollBuffering()
+        Note over GS: 每秒检查一次缓冲状态
+    else 非流媒体
+        GS->>NuP: notifyPrepared()
+    end
+    
+    GS->>GS: postReadBuffer(音频/视频)
+    
+    loop 数据读取循环
+        GS->>Source: read数据
+        Source-->>GS: 返回媒体数据
+        GS->>GS: 存入缓冲区
+        
+        alt 缓冲不足
+            GS->>GS: 继续postReadBuffer
+        else 缓冲足够
+            GS->>NuP: 通知准备完成/恢复播放
+        end
+    end
+```
+#### AACExtractor.cpp start
+会根据数据的格式创建不同的extractor，这里我们已AAC数据为例会创建AACExtractor
+```c++
+AACExtractor.cpp
+media_status_t AACSource::start() {
+    CHECK(!mStarted);
+    if (mOffsetVector.empty()) {
+        mOffset = 0;
+    } else {
+        mOffset = mOffsetVector.itemAt(0);
+    }
+    mCurrentTimeUs = 0;
+    // 为MediaBufferGroup添加一个大小为kMaxFrameSize(8192字节)的buffer
+    // MediaBufferGroup是一个buffer池,用于管理和复用MediaBuffer对象
+    // 这里预分配一个buffer用于后续AAC音频帧的读取
+    mBufferGroup->add_buffer(kMaxFrameSize);
+    mStarted = true;
+
+    return AMEDIA_OK;
+}
+```
+这里可以看到start就是向mBufferGroup中创建一个KMaxFrameSieze大小的buffer，这个KMaxFrameSieze 不同格式都不同。我们在当前阶段就不再分析这个数据走向了。
 #### 总结 
 在GenericSource.cpp onPrepareAsync完成了真正的soureData的创建，数据源支持HTTP/HTTPS/本地路径/fd情况
-在initFromDataSource中对数据demux
+在initFromDataSource中对数据demux，保存duration,audio/video的track,并且把解析出来的第一路A/Vtrack保存到mAudioTrack/mVideoTrack中。
+在finishPrepareAsync中启动数据源，在要播放的AV source中向MediaBufferGroup申请buffer，然后如果是流媒体那么就开启数据监测轮询机制，目的就是为了检测缓冲数据是否足够，如果不够更新缓冲了多少百分比。数据够了通知app进入准备状态。最后开始读取数据，当达到缓冲大小通知app
+```mermaid
+sequenceDiagram
+    participant App as 应用层
+    participant MP as MediaPlayer
+    participant NPD as NuPlayerDriver
+    participant NuP as NuPlayer
+    participant GS as GenericSource
+    participant MS as MediaSource
+
+    App->>MP: prepareAsync()
+    MP->>NPD: prepareAsync()
+    Note over NPD: 状态设置为<br>STATE_PREPARING
+    NPD->>NuP: prepareAsync()
+    NuP->>GS: prepareAsync()
+
+    GS->>GS: 创建数据源
+    GS->>GS: initFromDataSource()
+    Note over GS: 识别音视频轨道
+    
+    GS->>GS: finishPrepareAsync()
+    GS->>MS: startSources()
+    Note over MS: 分配缓冲区
+    
+    alt 流媒体内容
+        GS->>GS: schedulePollBuffering()
+        GS->>GS: postReadBuffer()
+        
+        par 读取流程
+            loop 数据读取循环
+                GS->>MS: read数据
+                MS-->>GS: 返回数据
+                GS->>GS: 存入缓冲区
+                
+                alt 读取判断
+                    GS->>GS: 判断缓冲是否足够
+                    alt 缓冲足够
+                        GS->>NPD: notifyPrepared()
+                        NPD->>App: MEDIA_PREPARED
+                    else 缓冲不足
+                        GS->>GS: 继续postReadBuffer
+                    end
+                end
+            end
+        and 监控流程
+            loop 每秒检查
+                GS->>GS: onPollBuffering()
+                GS->>App: 缓冲百分比通知
+            end
+        end
+        
+    else 本地文件
+        GS->>NPD: notifyPrepared()
+        GS->>GS: postReadBuffer()
+        NPD->>App: MEDIA_PREPARED
+    end
+    
+    Note over App: 开始播放
+```
+#### 思考 prepareAsync跟setDataSource合并长一个API不好吗？ 为什么要分为两部分
+最有可能的就是细分播放器的不同状态，并且更好的定位问题。一个API只做一件事情
 ### Start
+
 ### Pause/Stop
 ### Release
 
