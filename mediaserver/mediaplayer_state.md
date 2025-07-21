@@ -323,6 +323,7 @@ sp<MediaPlayerBase> MediaPlayerService::Client::setDataSource_pre(player_type pl
     if (!p->hardwareOutput()) {
         mAudioOutput = new AudioOutput(mAudioSessionId, mAttributionSource, mAudioAttributes,
                                        mAudioDeviceUpdatedListener);
+        //8.mAudioOutput 设置到Nuplayer中
         static_cast<MediaPlayerInterface*>(p.get())->setAudioSink(mAudioOutput);
     }
 
@@ -847,7 +848,7 @@ void NuPlayer::GenericSource::onPrepareAsync() {
 
 
 status_t NuPlayer::GenericSource::initFromDataSource() {
-    //1.创建extractor
+    //1.创建extractor  //在MediaExtractorFactory.cpp sniff中判断哪一个so最合适
     extractor = MediaExtractorFactory::Create(dataSource, NULL);
     //2.获取meta数据 用来获取duration
     sp<MetaData> fileMeta = extractor->getMetaData();
@@ -1128,6 +1129,215 @@ sequenceDiagram
 #### 思考 prepareAsync跟setDataSource合并长一个API不好吗？ 为什么要分为两部分
 最有可能的就是细分播放器的不同状态，并且更好的定位问题。一个API只做一件事情
 ### Start
+### mediaplayer.cpp
+
+```c++
+status_t MediaPlayer::start()
+{
+
+    if (mCurrentState & MEDIA_PLAYER_STARTED) {
+        ret = NO_ERROR;
+    } else if ( (mPlayer != 0) && ( mCurrentState & ( MEDIA_PLAYER_PREPARED |
+                    MEDIA_PLAYER_PLAYBACK_COMPLETE | MEDIA_PLAYER_PAUSED ) ) ) {
+        //设置是否循环播放 默认是false
+        mPlayer->setLooping(mLoop);
+        mPlayer->setVolume(mLeftVolume, mRightVolume);\
+        mPlayer->setAuxEffectSendLevel(mSendLevel);
+        mCurrentState = MEDIA_PLAYER_STARTED;
+        ret = mPlayer->start();
+        if (ret != NO_ERROR) {
+            mCurrentState = MEDIA_PLAYER_STATE_ERROR;
+        } else {
+            if (mCurrentState == MEDIA_PLAYER_PLAYBACK_COMPLETE) {
+                ALOGV("playback completed immediately following start()");
+            }
+        }
+    }
+}
+```
+### NuPlayer.cpp start
+```c++
+void NuPlayer::start() {
+    (new AMessage(kWhatStart, this))->post();
+}
+void NuPlayer::onMessageReceived(const sp<AMessage> &msg) {
+        case kWhatStart:
+        {
+            ALOGV("kWhatStart");
+            if (mStarted) {
+                // do not resume yet if the source is still buffering
+                if (!mPausedForBuffering) {
+                    onResume();
+                }
+            } else { //第一次走到这里面
+                onStart();
+            }
+            mPausedByClient = false;
+            break;
+        }
+}
+
+void NuPlayer::onStart(int64_t startPositionUs, MediaPlayerSeekMode mode) {
+    // 1. 开启数据流
+    if (!mSourceStarted) {
+        mSourceStarted = true;
+        mSource->start();
+    }
+    //2. 判断是否需要seek
+    if (startPositionUs > 0 && (mSourceFlags & Source::FLAG_CAN_SEEK)) {
+        performSeek(startPositionUs, mode);
+        if (mSource->getFormat(false /* audio */) == NULL) {
+            return;
+        }
+    }
+    // 判断当前媒体源是否为实时流（如网络直播、摄像头等），如果是，则在flags中设置实时渲染标志位Renderer::FLAG_REAL_TIME。
+    if (mSource->isRealTime()) {
+        flags |= Renderer::FLAG_REAL_TIME;
+    }
+
+
+    sp<MetaData> audioMeta = mSource->getFormatMeta(true /* audio */);
+
+    audio_stream_type_t streamType = AUDIO_STREAM_MUSIC;
+    if (mAudioSink != NULL) {
+        streamType = mAudioSink->getAudioStreamType();
+    }
+
+    这段代码的意思是：判断当前音频流是否可以进行“音频直通处理（offload）”。只有在满足以下两个条件时，mOffloadAudio 才会被设置为 true：
+    1. canOffloadStream(...) 返回 true，即当前音频流支持直通处理（比如硬件解码、低功耗播放等），其判断依据包括音频的元数据、是否包含视频、是否为流媒体、音频流类型等。
+    2. 当前播放速度（mPlaybackSettings.mSpeed）和音调（mPlaybackSettings.mPitch）都为1.0，即正常播放速度和音调。如果用户调整了倍速或变调，则不能 offload。
+    如果上述任一条件不满足，mOffloadAudio 就会被设置为 false，表示不能进行音频离线处理。
+    //4.判断是否支持Offload
+    // Modular DRM: Disabling audio offload if the source is protected
+    if (mOffloadAudio && mIsDrmProtected) {
+        mOffloadAudio = false;
+        ALOGV("onStart: Disabling mOffloadAudio now that the source is protected.");
+    }
+
+    if (mOffloadAudio) {
+        flags |= Renderer::FLAG_OFFLOAD_AUDIO;
+    }
+    //5. 创建NuPlayerRenderer 
+    sp<AMessage> notify = new AMessage(kWhatRendererNotify, this);
+    ++mRendererGeneration;
+    notify->setInt32("generation", mRendererGeneration);
+    //通知app MEDIA_PLAYBACK_COMPLETE
+    mRenderer = new Renderer(mAudioSink, mMediaClock, notify, flags);
+    mRendererLooper = new ALooper;
+    mRendererLooper->setName("NuPlayerRenderer");
+    mRendererLooper->start(false, false, ANDROID_PRIORITY_AUDIO);
+    mRendererLooper->registerHandler(mRenderer);
+
+    status_t err = mRenderer->setPlaybackSettings(mPlaybackSettings);
+    //6.设置 video的帧率
+    float rate = getFrameRate();
+    if (rate > 0) {
+        mRenderer->setVideoFrameRate(rate);
+    }
+    //首次没有创建codecer
+    if (mVideoDecoder != NULL) {
+        mVideoDecoder->setRenderer(mRenderer);
+    }
+    if (mAudioDecoder != NULL) {
+        mAudioDecoder->setRenderer(mRenderer);
+    }
+
+    startPlaybackTimer("onstart");
+    //7.在这里会创建Decoder
+    postScanSources();
+}
+void NuPlayer::postScanSources() {
+    if (mScanSourcesPending) {
+        return;
+    }
+
+    sp<AMessage> msg = new AMessage(kWhatScanSources, this);
+    msg->setInt32("generation", mScanSourcesGeneration);
+    msg->post();
+
+    mScanSourcesPending = true;
+}
+
+void NuPlayer::onMessageReceived(const sp<AMessage> &msg) {
+        case kWhatScanSources:
+        {
+            int32_t generation;
+            CHECK(msg->findInt32("generation", &generation));
+            if (generation != mScanSourcesGeneration) {
+                // Drop obsolete msg.
+                break;
+            }
+
+            mScanSourcesPending = false;
+            bool mHadAnySourcesBefore =
+                (mAudioDecoder != NULL) || (mVideoDecoder != NULL);
+            bool rescan = false;
+            // initialize video before audio because successful initialization of
+            // video may change deep buffer mode of audio.
+            //如果是offload 下 会创建decoder之后直接创建audiotrack,Decoder 
+            // 收到Audio Output Format Changed 事件后会调用 changeAudioFormat 方法，如果不是 offload mode，这里会调用 openAudioSink 创建普通的 AudioTrack。也就是说，普通模式下只有真正解出 audio 数据后 AudioTrack 才会被创建。 (分析数据流的时候在研究)
+
+            if (instantiateDecoder(false, &mVideoDecoder) == -EWOULDBLOCK) {
+                rescan = true;
+
+            if (instantiateDecoder(true, &mAudioDecoder) == -EWOULDBLOCK) {
+                rescan = true;
+                }
+            
+
+            if (!mHadAnySourcesBefore
+                    && (mAudioDecoder != NULL || mVideoDecoder != NULL)) {
+                // This is the first time we've found anything playable.
+
+                if (mSourceFlags & Source::FLAG_DYNAMIC_DURATION) {
+                    //返回总时长，如果是流媒体不支持返回总时长那就返回0或者未知
+                    schedulePollDuration();
+                }
+            }
+            status_t err;
+            //检测 如果没有数据可读就代码播放完成了
+            if ((err = mSource->feedMoreTSData()) != OK) {
+                if (mAudioDecoder == NULL && mVideoDecoder == NULL) {
+                    // We're not currently decoding anything (no audio or
+                    // video tracks found) and we just ran out of input data.
+
+                    if (err == ERROR_END_OF_STREAM) {
+						ALOGD("[test] ERROR_END_OF_STREAM");
+                        notifyListener(MEDIA_PLAYBACK_COMPLETE, 0, 0);
+                    } else {
+                        notifyListener(MEDIA_ERROR, MEDIA_ERROR_UNKNOWN, err);
+                    }
+                }
+                break;
+            }
+
+            if (rescan) {
+                msg->post(100000LL);
+                mScanSourcesPending = true;
+            }
+            break;
+        }
+}
+```
+#### GenericSource.cpp start
+```c++
+void NuPlayer::GenericSource::start() {
+  Mutex::Autolock _l(mLock);
+  ALOGI("start");
+  //在prepareAsync流程中也会有如下代码，但是功能不同，在流媒体的情况在prepareAsync是为了判断缓存到足够的数据，通知给app，然后就return了不会重复的拿数据
+  //但是在这里不是会重复的拿输出
+  if (mAudioTrack.mSource != NULL) {
+    postReadBuffer(MEDIA_TRACK_TYPE_AUDIO);
+  }
+
+  if (mVideoTrack.mSource != NULL) {
+    postReadBuffer(MEDIA_TRACK_TYPE_VIDEO);
+  }
+
+  mStarted = true;
+}
+```
+
 
 ### Pause/Stop
 ### Release
