@@ -1274,9 +1274,11 @@ void NuPlayer::onMessageReceived(const sp<AMessage> &msg) {
             bool rescan = false;
             // initialize video before audio because successful initialization of
             // video may change deep buffer mode of audio.
-            //如果是offload 下 会创建decoder之后直接创建audiotrack,Decoder 
-            // 收到Audio Output Format Changed 事件后会调用 changeAudioFormat 方法，如果不是 offload mode，这里会调用 openAudioSink 创建普通的 AudioTrack。也就是说，普通模式下只有真正解出 audio 数据后 AudioTrack 才会被创建。 (分析数据流的时候在研究)
-
+            /*如果是offload 下 会创建decoder之后直接创建audiotrack。
+            如果不是offload模式，在Decoder 收到Audio Output Format Changed 事件后会调用 changeAudioFormat 方法，
+            然后调用 openAudioSink 创建普通的 AudioTrack。
+             也就是说，普通模式下只有真正解出 audio 数据后 AudioTrack 才会被创建。 (分析数据流的时候在研究)
+            */
             if (instantiateDecoder(false, &mVideoDecoder) == -EWOULDBLOCK) {
                 rescan = true;
 
@@ -1337,7 +1339,97 @@ void NuPlayer::GenericSource::start() {
   mStarted = true;
 }
 ```
+好的，我们来系统性地总结一下从 `MediaPlayer.start()` 开始的整个非 Offload 播放启动流程，并用时序图清晰地展示出来。
 
+---
+
+####  `MediaPlayer.start()` 核心流程总结
+
+`start` 流程的核心任务是**从“准备就绪”状态切换到“正在播放”状态**。它不再进行媒体文件的解析（这已在 `prepare` 阶段完成），而是专注于**创建和启动数据处理的流水线**。
+
+这个流程可以概括为以下几个关键步骤：
+
+1.  **状态检查与设置**：
+    -   `MediaPlayer` 首先检查自身状态是否为 `PREPARED`、`PAUSED` 或 `PLAYBACK_COMPLETE`，只有在这些状态下才能启动。
+    -   将自身状态更新为 `MEDIA_PLAYER_STARTED`。
+
+2.  **异步消息触发**：
+    -   `MediaPlayer` 调用 `mPlayer->start()`，这会通过 Binder IPC 将请求发送到 `NuPlayer`。
+    -   `NuPlayer` 不会立即执行启动逻辑，而是发送一个 `kWhatStart` **异步消息**给自己，将实际的启动操作推送到其内部的消息循环中处理，避免阻塞调用者。
+
+3.  **渲染器 (Renderer) 的创建与启动**：
+    -   `NuPlayer` 在处理 `kWhatStart` 消息时，执行 `onStart()`。
+    -   `onStart()` 的核心工作之一是**创建并配置 `NuPlayerRenderer`**。`Renderer` 是负责将解码后的音视频数据最终呈现出来的组件。
+    -   `Renderer` 被创建后，会在一个独立的 Looper 线程中运行，等待后续的指令和数据。
+
+4.  **解码器 (Decoder) 的实例化**：
+    -   `onStart()` 会调用 `postScanSources()`，它同样通过发送 `kWhatScanSources` 异步消息来执行。
+    -   在处理 `kWhatScanSources` 消息时，`NuPlayer` 会调用 `instantiateDecoder()`，**为音频和视频轨道分别创建对应的解码器实例**（如 `ACodec`）。
+    -   解码器被告知 `Renderer` 的存在，以便解码后的数据可以直接发送给 `Renderer`。
+
+5.  **数据流的启动**：
+    -   在 `onStart()` 内部，`mSource->start()` 被调用。
+    -   `GenericSource`（即 `mSource`）收到 `start` 命令后，会为音频和视频轨道分别调用 `postReadBuffer()`。
+    -   `postReadBuffer()` 就像是打开了数据流的“总阀门”，它会启动一个**持续的循环**：从 `MediaExtractor` 读取压缩数据 -> 发送给解码器 -> 解码器解码 -> 解码后的数据发送给 `Renderer`。
+
+6.  **`AudioTrack` 的创建与播放开始**：
+    -   当第一个解码后的音频数据包（PCM）到达 `NuPlayerRenderer` 时，`Renderer` 发现 `AudioSink`（内部包含 `AudioTrack`）尚未打开。
+    -   此时，`Renderer` 才会去调用 `mAudioSink->open()`，根据音频参数**真正地创建 `AudioTrack`**。
+    -   `AudioTrack` 创建成功后，第一个音频数据包被写入，声音正式开始播放。
+
+---
+
+
+#### `start` 流程时序图
+```mermaid
+sequenceDiagram
+    participant App
+    participant MediaPlayer
+    participant NuPlayer
+    participant GenericSource
+    participant NuPlayerRenderer
+    participant ACodec as Decoder
+
+    App->>MediaPlayer: start()
+    MediaPlayer->>NuPlayer: start()
+
+    NuPlayer->>NuPlayer: post(kWhatStart)
+    activate NuPlayer
+    Note over NuPlayer: onStart() 开始执行
+    NuPlayer->>GenericSource: start()
+    deactivate NuPlayer
+
+    activate GenericSource
+    GenericSource->>GenericSource: postReadBuffer()
+    Note over GenericSource: 启动数据读取循环
+    deactivate GenericSource
+
+    activate NuPlayer
+    NuPlayer->>NuPlayer: post(kWhatScanSources)
+    Note over NuPlayer: onStart() 继续执行
+    NuPlayer-->>NuPlayerRenderer: new Renderer()
+    deactivate NuPlayer
+
+    activate NuPlayer
+    Note over NuPlayer: onScanSources() 开始执行
+    NuPlayer-->>ACodec: new Decoder()
+    deactivate NuPlayer
+
+    Note over GenericSource, ACodec: 数据开始流动: <br/> Source -> Decoder
+    
+    ACodec->>NuPlayerRenderer: 发送第一帧解码后的<br/>音频数据 (PCM)
+    
+    activate NuPlayerRenderer
+    alt AudioSink 未打开
+        NuPlayerRenderer->>NuPlayerRenderer: openAudioSink()
+        Note right of NuPlayerRenderer: new AudioTrack()
+    end
+    
+    NuPlayerRenderer->>NuPlayerRenderer: mAudioSink->write(PCM)
+    Note right of NuPlayerRenderer: 声音开始播放
+    deactivate NuPlayerRenderer
+
+```
 
 ### Pause/Stop
 ### Release
