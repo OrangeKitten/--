@@ -1339,6 +1339,95 @@ void NuPlayer::GenericSource::start() {
 ```
 
 
-### Pause/Stop
+### pause
+#### NuPlayerDriver.cpp pause
+直接从NuPlayerDriver开始分析
+```c++
+status_t NuPlayerDriver::pause() {
+    ALOGD("pause(%p)", this);
+    //在pause中获取播放进度是因为AF中存在standby机制，当输出流如果没有数据传输,3S（默认值）后回出发这个standby
+    //standby的目的就是会通知audiohal 去关闭播放通路，可能是pcm_close 从而节省电量
+    int unused;
+    getCurrentPosition(&unused);
+
+    Mutex::Autolock autoLock(mLock);
+
+    switch (mState) {
+        case STATE_PAUSED:
+        case STATE_PREPARED:
+            return OK;
+        case STATE_RUNNING:
+            mState = STATE_PAUSED;
+            //直接通知app 目前是pause状态
+            notifyListener_l(MEDIA_PAUSED);
+            mPlayer->pause();
+            break;
+
+        default:
+            return INVALID_OPERATION;
+    }
+
+    return OK;
+}
+```
+#### Nuplatyer.cpp pause
+```c++
+void NuPlayer::pause() {
+    (new AMessage(kWhatPause, this))->post();
+}
+
+void NuPlayer::onMessageReceived(const sp<AMessage> &msg) {
+    switch (msg->what()) {
+        case kWhatPause:
+        {
+            onPause();
+            mPausedByClient = true;
+            break;
+        }
+    }
+}
+void NuPlayer::onPause() {
+    //更新播放时长
+    updatePlaybackTimer(true /* stopping */, "onPause");
+
+    if (mPaused) {
+        return;
+    }
+    mPaused = true;
+    //更新mSource播放状态
+    mSource->pause();
+
+    mRenderer->pause();
+}
+```
+#### NuPlayerRenderer.cpp onPause
+```c++
+
+void NuPlayer::Renderer::onPause() {
+    if (mPaused) {
+        return;
+    }
+    startAudioOffloadPauseTimeout();
+
+    {
+        Mutex::Autolock autoLock(mLock);
+        // we do not increment audio drain generation so that we fill audio buffer during pause.
+        ++mVideoDrainGeneration;
+        prepareForMediaRenderingStart_l();
+        mPaused = true;
+        mMediaClock->setPlaybackRate(0.0);
+    }
+
+    mDrainAudioQueuePending = false;
+    mDrainVideoQueuePending = false;
+
+    // Note: audio data may not have been decoded, and the AudioSink may not be opened.
+    mAudioSink->pause();
+
+    ALOGV("now paused audio queue has %zu entries, video has %zu entries",
+          mAudioQueue.size(), mVideoQueue.size());
+}
+```
+### stop
 ### Release
 
