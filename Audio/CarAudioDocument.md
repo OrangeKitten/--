@@ -214,11 +214,11 @@
 | `AUDIO_USAGE_BT_MUSIC` | `4` | 蓝牙音乐(A2DP) | 蓝牙音乐播放 |
 | `AUDIO_USAGE_CARLIFE_MEDIA` | `5` | Carlife媒体 | 百度Carlife媒体播放 |
 | `AUDIO_USAGE_CARPLAY_MEDIA` | `6` | Carplay媒体 | Apple Carplay媒体播放 |
-| `AUDIO_USAGE_TX_MEDIA` | `7` | TX媒体 | 腾讯系媒体播放 |
+| `AUDIO_USAGE_TX_MEDIA` | `7` | TX媒体 | 媒体播放 |
 | `AUDIO_USAGE_TX_MEDIA_OTHER` | `8` | TX其他媒体 | 腾讯系其他媒体 |
 | `AUDIO_USAGE_3RD` | `9` | 第三方应用 | 第三方应用音频 |
 | `AUDIO_USAGE_AUTO_NAVI` | `10` | 自动地图导航 | 车载导航语音 |
-| `AUDIO_USAGE_TX_NAVI` | `11` | 腾讯导航 | 腾讯地图导航语音 |
+| `AUDIO_USAGE_TX_NAVI` | `11` | 导航 | 地图导航语音 |
 | `AUDIO_USAGE_CARLIFE_NAVI` | `12` | Carlife导航 | 百度Carlife导航语音 |
 | `AUDIO_USAGE_CARPLAY_NAVI` | `13` | Carplay导航 | Apple Carplay导航语音 |
 | `AUDIO_USAGE_RINGTONE` | `14` | 蓝牙来电铃声 | 蓝牙电话铃声 |
@@ -234,8 +234,8 @@
 | `AUDIO_USAGE_CARLIFE_TEL` | `20` | Carlife电话 | 百度Carlife通话 |
 | `AUDIO_USAGE_VOIP` | `21` | VoIP通话 | 网络语音通话 |
 | `AUDIO_USAGE_VOIP_RING` | `22` | VoIP来电铃声 | 网络电话铃声 |
-| `AUDIO_USAGE_TX_VR_TTS` | `23` | 腾讯VR语音 | 腾讯VR语音交互 |
-| `AUDIO_USAGE_TX_VR` | `24` | 腾讯VR | 腾讯VR场景 |
+| `AUDIO_USAGE_TX_VR_TTS` | `23` | 腾讯VR语音 | 语音交互 |
+| `AUDIO_USAGE_TX_VR` | `24` | 腾讯VR | 语音助手 |
 | `AUDIO_USAGE_CARLIFE_VR` | `25` | Carlife VR | 百度Carlife VR场景 |
 | `AUDIO_USAGE_CARPLAY_VR` | `26` | Carplay VR | Apple Carplay VR场景 |
 

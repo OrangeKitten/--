@@ -1431,9 +1431,9 @@ sequenceDiagram
 
 ```
 
-### Pause
+### pause
 
-### Stop
+### stop
 
 ### Release
 
