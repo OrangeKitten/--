@@ -19,14 +19,14 @@
                 Log.d(TAG, "MediaPlayer准备完成，开始播放")
                 mediaPlayer.start();// 开始播放
             });
-            prepareAsync(); // 异步准备
+            mediaPlayer.prepareAsync(); // 异步准备
         } catch (Exception e) {
             Log.e("MediaPlayer", "初始化失败：" + e.getMessage());
         }
         //播放进行中
         mediaPlayer.pause(); // 暂停播放
         mediaPlayer.stop(); // 停止播放
-        mediaPlayer.prepare(); // 停止后需要重新准备播放器
+        mediaPlayer.release(); // 停止后需要重新准备播放器
 ```
 上面就是使用MediaPlayer API的简化的播放流程。MediaPlayer是支持同步准备的，该代码使用了异步准备，目的是为了不会卡住UI，当准备完成之后会触发MediaPlayer中的函数OnPreparedListener，然后开始播放。
 有AudioTrack的播放流程不同的是，不需要write。数据的读写都是MediaPlayer控制，这大大减少了APP的开发难度
@@ -1504,7 +1504,10 @@ void NuPlayer::Renderer::onPause() {
     {
         Mutex::Autolock autoLock(mLock);
         // we do not increment audio drain generation so that we fill audio buffer during pause.
+        //audio 不自增：pause 时允许 audio buffer 继续被填充，保证 resume 后音频平滑。
+        //video 要自增：pause 时不再渲染视频帧，防止旧的 drain 消息继续渲染。
         ++mVideoDrainGeneration;
+        //跟新mAudioRenderingStartGeneration mVideoRenderingStartGeneration
         prepareForMediaRenderingStart_l();
         mPaused = true;
         mMediaClock->setPlaybackRate(0.0);
@@ -1513,14 +1516,115 @@ void NuPlayer::Renderer::onPause() {
     mDrainAudioQueuePending = false;
     mDrainVideoQueuePending = false;
 
-    // Note: audio data may not have been decoded, and the AudioSink may not be opened.
     mAudioSink->pause();
 
     ALOGV("now paused audio queue has %zu entries, video has %zu entries",
           mAudioQueue.size(), mVideoQueue.size());
 }
-```
-### stop
 
-### Release
+void NuPlayer::Renderer::prepareForMediaRenderingStart_l() {
+    mAudioRenderingStartGeneration = mAudioDrainGeneration;
+    mVideoRenderingStartGeneration = mVideoDrainGeneration;
+    mRenderingDataDelivered = false;
+}
+
+```
+#### MediaPlayerService::AudioOutput::pause
+```c++
+
+void MediaPlayerService::AudioOutput::pause()
+{
+    ALOGV("pause");
+    // We use pauseAndWait() instead of pause() to ensure tracks ramp to silence before
+    // any flush. We choose 40 ms timeout to allow 1 deep buffer mixer period
+    // to occur.  Often waiting is 0 - 20 ms.
+    using namespace std::chrono_literals;
+    constexpr auto TIMEOUT_MS = 40ms;
+    Mutex::Autolock lock(mLock);
+    //没啥说的了就挺无语的 这个函数说是实现了淡入淡出但是该功能在Android16上都还没有实现呢
+    if (mTrack != 0) mTrack->pauseAndWait(TIMEOUT_MS);
+}
+```
+#### 疑问在Pause流程中，是有把AudioTrack Pause的但是对于video来说并没有看到相关的pause操作，这块还不知道是如何停止播放的
+```c++
+void NuPlayer::Renderer::postDrainVideoQueue() {
+    if (mDrainVideoQueuePending
+            || getSyncQueues()
+            || (mPaused && mVideoSampleReceived)) {
+        return;
+    }
+}
+```
+在NuplayerRenderer中有如上代码，当pause时 mPaused = true， 因此直接return就不会再渲染了。
+
+### stop
+#### NuPlayerDriver.cpp
+```c++
+status_t NuPlayerDriver::stop() {
+    ALOGD("stop(%p)", this);
+    Mutex::Autolock autoLock(mLock);
+
+    switch (mState) {
+        case STATE_RUNNING:
+            mPlayer->pause();
+            // FALLTHROUGH_INTENDED 表示这里的 case 语句故意没有 break，
+            // 执行完当前 case 后会继续执行下一个 case 的代码。
+            // 这是一种明确的标记，表明这种行为是有意为之的，而不是代码错误。
+            FALLTHROUGH_INTENDED;
+
+        case STATE_PAUSED:
+            mState = STATE_STOPPED;
+            notifyListener_l(MEDIA_STOPPED);
+            break;
+
+        case STATE_PREPARED:
+        case STATE_STOPPED:
+        case STATE_STOPPED_AND_PREPARING:
+        case STATE_STOPPED_AND_PREPARED:
+            mState = STATE_STOPPED;
+            break;
+
+        default:
+            return INVALID_OPERATION;
+    }
+
+    return OK;
+}
+```
+可以看到stop这个函数 没有做什么操作，只是在STATE_RUNNING状态下会调用pause
+### release
+```c++
+android_media_MediaPlayer.cpp
+static void
+android_media_MediaPlayer_release(JNIEnv *env, jobject thiz)
+{
+    ALOGV("release");
+    decVideoSurfaceRef(env, thiz);
+    sp<MediaPlayer> mp = setMediaPlayer(env, thiz, 0);
+    if (mp != NULL) {
+        // this prevents native callbacks after the object is released
+        //清空之情
+        mp->setListener(0);
+        mp->disconnect();
+    }
+}
+
+mediaplayer.cpp
+void MediaPlayer::disconnect()
+{
+    ALOGV("disconnect");
+    sp<IMediaPlayer> p;
+    {
+        Mutex::Autolock _l(mLock);
+        p = mPlayer;
+        //清除mPlayer的计数器
+        mPlayer.clear();
+    }
+
+    if (p != 0) {
+        p->disconnect();
+    }
+}
+
+```
 
