@@ -1627,4 +1627,71 @@ void MediaPlayer::disconnect()
 }
 
 ```
+#### MediaPlayerService disconnect
+```c++
+void MediaPlayerService::Client::disconnect() {
+    ALOGV("disconnect(%d) from AttributionSource %s", mConnId,
+          mAttributionSource.toString().c_str());
+    // grab local reference and clear main reference to prevent future
+    // access to object
+    sp<MediaPlayerBase> p;
+    {
+        Mutex::Autolock l(mLock);
+        p = mPlayer;
+        mClient.clear();
+        mPlayer.clear();
+    }
+
+    // clear the notification to prevent callbacks to dead client
+    // and reset the player. We assume the player will serialize
+    // access to itself if necessary.
+    if (p != 0) {
+        p->setNotifyCallback(0);
+#if CALLBACK_ANTAGONIZER
+        ALOGD("kill Antagonizer");
+        mAntagonizer->kill();
+#endif
+        p->reset();
+    }
+
+    {
+        Mutex::Autolock l(mLock);
+        disconnectNativeWindow_l();
+    }
+
+    IPCThreadState::self()->flushCommands();
+}
+```
+#### NuplayDriver::reset
+```c++
+status_t NuPlayerDriver::reset() {
+
+    switch (mState) {
+        case STATE_IDLE:
+            return OK;
+
+        case STATE_SET_DATASOURCE_PENDING:
+        case STATE_RESET_IN_PROGRESS:
+            return INVALID_OPERATION;
+        case STATE_PREPARING:
+        {
+            CHECK(mIsAsyncPrepare);
+            notifyListener_l(MEDIA_PREPARED);
+            break;
+        }
+
+        default:
+            break;
+    }
+
+    if (mState != STATE_STOPPED) {
+        notifyListener_l(MEDIA_STOPPED);
+    }
+
+    mState = STATE_RESET_IN_PROGRESS;
+    mPlayer->resetAsync();
+
+    return OK;
+}
+```
 
