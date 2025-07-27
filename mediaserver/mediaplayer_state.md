@@ -1694,4 +1694,221 @@ status_t NuPlayerDriver::reset() {
     return OK;
 }
 ```
+#### NuPlayer reset 
+```c++
+void NuPlayer::resetAsync() {
+    sp<Source> source;
+    {
+        Mutex::Autolock autoLock(mSourceLock);
+        source = mSource;
+    }
 
+    if (source != NULL) {
+        // 在重置过程中,数据源可能已经无响应,我们需要显式断开连接以便读取操作能够及时退出
+        // 我们不能将断开连接的请求排队到looper中,因为它可能排在一个卡住的读取操作后面而永远无法处理
+        // 在looper外部执行断开连接操作,允许挂起的读取操作退出(成功或出错)
+        source->disconnect();
+    }
+
+    (new AMessage(kWhatReset, this))->post();
+}
+void NuPlayer::onMessageReceived(const sp<AMessage> &msg) {
+    switch (msg->what()) {
+        
+        case kWhatReset:
+        {
+            ALOGV("kWhatReset");
+
+            mResetting = true;
+            // 更新播放计时器,停止计时
+            updatePlaybackTimer(true /* stopping */, "kWhatReset");
+            // 更新缓冲计时器,停止计时并标记退出播放
+            updateRebufferingTimer(true /* stopping */, true /* exiting */);
+
+            mDeferredActions.push_back(
+                    new FlushDecoderAction(
+                        FLUSH_CMD_SHUTDOWN /* audio */,
+                        FLUSH_CMD_SHUTDOWN /* video */));
+
+            mDeferredActions.push_back(
+                    new SimpleAction(&NuPlayer::performReset));
+
+            processDeferredActions();
+            break;
+        }}
+}
+void NuPlayer::processDeferredActions() {
+    while (!mDeferredActions.empty()) {
+        // 在解码器处于中间状态(即一个或多个解码器正在刷新或关闭)时,
+        // 我们不会执行任何延迟的动作
+        // 当音频或视频解码器正在刷新时(mFlushingAudio/mFlushingVideo != NONE),
+        // 需要推迟执行重置操作,直到刷新完成
+        // 这是因为在刷新过程中执行重置可能会导致状态不一致
+        if (mFlushingAudio != NONE || mFlushingVideo != NONE) {
+            // We're currently flushing, postpone the reset until that's
+            // completed.
+
+            ALOGV("postponing action mFlushingAudio=%d, mFlushingVideo=%d",
+                  mFlushingAudio, mFlushingVideo);
+
+            break;
+        }
+
+        sp<Action> action = *mDeferredActions.begin();
+        mDeferredActions.erase(mDeferredActions.begin());
+
+        action->execute(this);
+    }
+}
+
+```
+
+# handleFlushComplete函数的调用流程及在release中的作用
+
+`handleFlushComplete`是NuPlayer中处理解码器或渲染器刷新完成事件的关键函数，它在MediaPlayer的生命周期中多次被调用，包括release流程。下面详细分析其调用流程及在release过程中的作用。
+
+## handleFlushComplete函数的基本作用
+
+`handleFlushComplete`函数负责处理两种组件的刷新完成通知：
+1. 解码器(Decoder)的刷新完成
+2. 渲染器(Renderer)的刷新完成
+
+函数签名：
+```cpp
+void NuPlayer::handleFlushComplete(bool audio, bool isDecoder)
+```
+
+参数含义：
+- `audio`: 是音频(true)还是视频(false)组件
+- `isDecoder`: 是解码器(true)还是渲染器(false)
+
+## 调用流程
+
+`handleFlushComplete`的调用流程如下：
+
+### 1. 解码器刷新完成的路径
+
+```mermaid
+graph TD
+    A[Decoder::onFlushCompleted] --> B[kWhatFlushCompleted消息]
+    B --> C[NuPlayer::onMessageReceived]
+    C --> D[NuPlayer::handleFlushComplete<br>audio, true]
+```
+
+当解码器完成刷新操作后，会发送`kWhatFlushCompleted`消息给NuPlayer，NuPlayer在`onMessageReceived`中处理该消息，并调用`handleFlushComplete(audio, true)`。
+
+### 2. 渲染器刷新完成的路径
+
+```mermaid
+graph TD
+    A[Renderer::onFlushComplete] --> B[kWhatFlushComplete消息]
+    B --> C[NuPlayer::onMessageReceived]
+    C --> D[NuPlayer::handleFlushComplete<br>audio, false]
+```
+
+当渲染器完成刷新操作后，会发送`kWhatFlushComplete`消息给NuPlayer，NuPlayer在`onMessageReceived`中处理该消息，并调用`handleFlushComplete(audio, false)`。
+
+## 在release流程中的调用
+
+在MediaPlayer的release流程中，`handleFlushComplete`确实会被调用，具体流程如下：
+
+```mermaid
+graph TD
+    A[MediaPlayer.release] --> B[MediaPlayer.disconnect]
+    B --> C[MediaPlayerService::Client::disconnect]
+    C --> D[MediaPlayerBase::reset]
+    D --> E[NuPlayerDriver::reset]
+    E --> F[NuPlayer::resetAsync]
+    F --> G[FlushDecoderAction<br>FLUSH_CMD_SHUTDOWN]
+    G --> H[NuPlayer::flushDecoder]
+    H --> I[Decoder::signalFlush]
+    I --> J[Decoder::onFlushCompleted]
+    J --> K[NuPlayer::handleFlushComplete<br>audio, true]
+    
+    F --> L[Renderer::flush]
+    L --> M[Renderer::onFlushComplete]
+    M --> N[NuPlayer::handleFlushComplete<br>audio, false]
+```
+
+在release流程中，`handleFlushComplete`的调用是由以下步骤触发的：
+
+1. `MediaPlayer.release()` 调用 `disconnect()`
+2. `disconnect()` 调用 `reset()`
+3. `reset()` 触发 `NuPlayer::resetAsync()`
+4. `resetAsync()` 添加 `FlushDecoderAction(FLUSH_CMD_SHUTDOWN, FLUSH_CMD_SHUTDOWN)` 到延迟队列
+5. `FlushDecoderAction` 执行时调用 `flushDecoder(audio, true)`
+6. `flushDecoder()` 调用 `decoder->signalFlush()`
+7. 解码器完成刷新后，发送 `kWhatFlushCompleted` 消息
+8. NuPlayer处理消息并调用 `handleFlushComplete(audio, true)`
+9. 同样，渲染器完成刷新后也会触发 `handleFlushComplete(audio, false)`
+
+## handleFlushComplete的具体实现
+
+```cpp
+void NuPlayer::handleFlushComplete(bool audio, bool isDecoder) {
+    // 标记对应组件的刷新已完成
+    mFlushComplete[audio][isDecoder] = true;
+    
+    // 如果另一个组件(解码器或渲染器)还未完成刷新，则等待
+    if (!mFlushComplete[audio][!isDecoder]) {
+        return;
+    }
+
+    FlushStatus *state = audio ? &mFlushingAudio : &mFlushingVideo;
+    switch (*state) {
+        case FLUSHING_DECODER:
+        {
+            *state = FLUSHED;
+            break;
+        }
+
+        case FLUSHING_DECODER_SHUTDOWN:
+        {
+            *state = SHUTTING_DOWN_DECODER;
+            // 启动解码器关闭流程
+            getDecoder(audio)->initiateShutdown();
+            break;
+        }
+
+        default:
+            // 解码器刷新只在刷新状态下完成
+            LOG_ALWAYS_FATAL_IF(isDecoder, "decoder flush in invalid state %d", *state);
+            break;
+    }
+}
+```
+
+## 在release中的关键作用
+
+在release流程中，`handleFlushComplete`的关键作用是：
+
+1. **状态转换**：将刷新状态从`FLUSHING_DECODER_SHUTDOWN`转换为`SHUTTING_DOWN_DECODER`
+2. **启动解码器关闭**：调用`decoder->initiateShutdown()`开始解码器的关闭流程
+3. **协调刷新完成**：通过`finishFlushIfPossible()`函数检查所有刷新是否完成，并执行后续操作
+
+当解码器关闭完成后，会再次触发消息，最终调用`finishFlushIfPossible()`，在这个函数中会清除解码器实例：
+
+```cpp
+void NuPlayer::finishFlushIfPossible() {
+    // ...
+    if (audio) {
+        Mutex::Autolock autoLock(mDecoderLock);
+        mAudioDecoder.clear();  // 清除音频解码器实例
+        ++mAudioDecoderGeneration;
+    } else {
+        Mutex::Autolock autoLock(mDecoderLock);
+        mVideoDecoder.clear();  // 清除视频解码器实例
+        ++mVideoDecoderGeneration;
+    }
+    // ...
+}
+```
+
+## 总结
+
+1. `handleFlushComplete`是处理刷新完成事件的关键函数，负责管理解码器和渲染器的状态转换
+2. 在release流程中，它确实会被调用，用于协调解码器的关闭过程
+3. 它通过状态机确保解码器资源被正确释放，是MediaPlayer资源回收的重要环节
+4. 函数的调用是异步的，由解码器和渲染器完成刷新操作后通过消息机制触发
+
+这种设计确保了即使在复杂的异步环境中，MediaPlayer也能安全、有序地释放所有资源，避免内存泄漏和状态混乱。
