@@ -1,0 +1,136 @@
+/* 音频子系统设备树配置 */
+/ {
+    /* 音频时钟配置 */
+    audio_clocks: audio-clocks {
+        compatible = "fixed-clock";
+        #clock-cells = <0>;
+        clock-frequency = <12288000>; /* 12.288MHz MCLK */
+        clock-output-names = "audio-mclk";
+    };
+
+    /* I2S音频接口配置 */
+    i2s0: i2s@40010000 {
+        compatible = "vendor,audio-i2s";
+        reg = <0x40010000 0x1000>;
+        interrupts = <GIC_SPI 45 IRQ_TYPE_LEVEL_HIGH>;
+        clocks = <&audio_clocks>;
+        clock-names = "mclk";
+        
+        /* DMA配置 */
+        dmas = <&dma_controller 2 0>,    /* TX DMA channel 2 */
+               <&dma_controller 3 0>;    /* RX DMA channel 3 */
+        dma-names = "tx", "rx";
+        
+        /* MMAP支持 */
+        mmap-support;
+        
+        /* 缓冲区配置 */
+        buffer-size = <0x10000>;         /* 64KB buffer */
+        period-size = <0x1000>;          /* 4KB period */
+        
+        status = "okay";
+    };
+
+    /* 音频功放配置 */
+    audio_amp: audio-amplifier {
+        compatible = "simple-audio-amplifier";
+        enable-gpios = <&gpio1 25 GPIO_ACTIVE_HIGH>;
+        VCC-supply = <&reg_audio_3v3>;
+        
+        /* 功放参数 */
+        sound-name-prefix = "Speaker";
+        
+        status = "okay";
+    };
+
+    /* 音频Codec配置 */
+    audio_codec: codec@1a {
+        compatible = "vendor,audio-codec";
+        reg = <0x1a>;
+        
+        /* 供电配置 */
+        AVDD-supply = <&reg_audio_3v3>;
+        DVDD-supply = <&reg_audio_1v8>;
+        
+        /* GPIO配置 */
+        reset-gpios = <&gpio2 10 GPIO_ACTIVE_LOW>;
+        
+        /* 时钟配置 */
+        clocks = <&audio_clocks>;
+        clock-names = "mclk";
+        
+        status = "okay";
+    };
+
+    /* ASoC音频卡配置 */
+    sound {
+        compatible = "simple-audio-card";
+        simple-audio-card,name = "Audio Card";
+        simple-audio-card,format = "i2s";
+        simple-audio-card,bitclock-master = <&cpu_dai>;
+        simple-audio-card,frame-master = <&cpu_dai>;
+        
+        /* CPU DAI配置 */
+        cpu_dai: simple-audio-card,cpu {
+            sound-dai = <&i2s0>;
+            dai-tdm-slot-num = <2>;
+            dai-tdm-slot-width = <32>;
+        };
+        
+        /* Codec DAI配置 */
+        simple-audio-card,codec {
+            sound-dai = <&audio_codec>;
+        };
+        
+        /* 音频路由配置 */
+        simple-audio-card,routing =
+            "Speaker", "SPKL",
+            "Speaker", "SPKR",
+            "LINEIN", "Line In",
+            "MICIN", "Mic In";
+        
+        /* 控件配置 */
+        simple-audio-card,widgets =
+            "Speaker", "Speaker",
+            "Line", "Line In",
+            "Microphone", "Mic In";
+    };
+
+    /* DMA控制器配置 */
+    dma_controller: dma-controller@40020000 {
+        compatible = "vendor,dma-controller";
+        reg = <0x40020000 0x1000>;
+        interrupts = <GIC_SPI 50 IRQ_TYPE_LEVEL_HIGH>;
+        #dma-cells = <2>;
+        
+        /* DMA通道配置 */
+        dma-channels = <8>;
+        dma-requests = <32>;
+        
+        status = "okay";
+    };
+
+    /* 电源管理配置 */
+    regulators {
+        reg_audio_3v3: regulator-audio-3v3 {
+            compatible = "regulator-fixed";
+            regulator-name = "audio-3v3";
+            regulator-min-microvolt = <3300000>;
+            regulator-max-microvolt = <3300000>;
+            regulator-always-on;
+            regulator-boot-on;
+            gpio = <&gpio1 20 GPIO_ACTIVE_HIGH>;
+            enable-active-high;
+        };
+        
+        reg_audio_1v8: regulator-audio-1v8 {
+            compatible = "regulator-fixed";
+            regulator-name = "audio-1v8";
+            regulator-min-microvolt = <1800000>;
+            regulator-max-microvolt = <1800000>;
+            regulator-always-on;
+            regulator-boot-on;
+            vin-supply = <&reg_audio_3v3>;
+        };
+    };
+}; 
