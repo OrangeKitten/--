@@ -3039,7 +3039,7 @@ if(currentMode == OutMediaMode.OUTCAR) {
 ## AVAS低速行人提示音功能接口
 
 ### AVASStyle 提示音风格
-
+#.
 | 常量 | 值 | 说明 |
 |------|----|------|
 | `OFF` | 0 | 关闭提示音 |

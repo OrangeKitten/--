@@ -1679,7 +1679,7 @@ status_t NuPlayer::GenericSource::dequeueAccessUnit(bool audio,
   return result;
 }
 ```
-该函数是从AVPacktet中取数据,那么是调用NuPlayer::GenericSource::dequeueAccessUnit函数呢，我们接下来看一下NuPlayer::Decoder::fetchInputData函数。
+该函数是从AVPacktet中取数据,那么是如何调用NuPlayer::GenericSource::dequeueAccessUnit函数呢，我们接下来看一下NuPlayer::Decoder::fetchInputData函数。
 ```c++
 status_t NuPlayer::Decoder::fetchInputData(sp<AMessage> &reply) {
     // 访问单元（Access Unit），通常指一个编码后的音频或视频帧
