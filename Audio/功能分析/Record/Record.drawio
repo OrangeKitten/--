@@ -1,0 +1,102 @@
+<mxfile host="65bd71144e">
+    <diagram id="fwEubIegb3P0LMTCD2sq" name="第 2 页">
+        <mxGraphModel dx="1122" dy="919" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="cwv2VEItMZo3kcqdl-Be-1" value="AudioFlinger" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#000000;verticalAlign=top;" vertex="1" parent="1">
+                    <mxGeometry x="270" y="370" width="330" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="cwv2VEItMZo3kcqdl-Be-2" value="FrameWork" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+                    <mxGeometry x="134" y="320" width="600" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="cwv2VEItMZo3kcqdl-Be-3" value="应用" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+                    <mxGeometry x="130" y="120" width="600" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="cwv2VEItMZo3kcqdl-Be-4" value="无麦K歌" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;horizontal=1;verticalAlign=top;" vertex="1" parent="1">
+                    <mxGeometry x="160" y="160" width="230" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="cwv2VEItMZo3kcqdl-Be-5" value="全名K歌" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;" vertex="1" parent="1">
+                    <mxGeometry x="470" y="160" width="230" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="cwv2VEItMZo3kcqdl-Be-6" value="" style="edgeStyle=none;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="cwv2VEItMZo3kcqdl-Be-7" target="cwv2VEItMZo3kcqdl-Be-11">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="520" y="410" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="cwv2VEItMZo3kcqdl-Be-7" value="AudioRecord" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+                    <mxGeometry x="525" y="190" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="cwv2VEItMZo3kcqdl-Be-8" value="" style="edgeStyle=none;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="cwv2VEItMZo3kcqdl-Be-9" target="cwv2VEItMZo3kcqdl-Be-11">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="cwv2VEItMZo3kcqdl-Be-9" value="AudioRecord" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+                    <mxGeometry x="215" y="190" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="cwv2VEItMZo3kcqdl-Be-10" value="" style="edgeStyle=none;html=1;entryX=0.488;entryY=0.033;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="cwv2VEItMZo3kcqdl-Be-11" target="cwv2VEItMZo3kcqdl-Be-12">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="440" y="585" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="cwv2VEItMZo3kcqdl-Be-11" value="RecordThread" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#60a917;strokeColor=#2D7600;fontColor=#ffffff;" vertex="1" parent="1">
+                    <mxGeometry x="375" y="410" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="cwv2VEItMZo3kcqdl-Be-12" value="AudioHAl" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+                    <mxGeometry x="140" y="530" width="600" height="60" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="pObJZ_hQQHRy5wNwkDdx" name="第 1 页">
+        <mxGraphModel dx="1122" dy="919" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="10" value="AudioFlinger" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#000000;verticalAlign=top;" vertex="1" parent="1">
+                    <mxGeometry x="250" y="340" width="330" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="9" value="FrameWork" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+                    <mxGeometry x="114" y="290" width="600" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="4" value="应用" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+                    <mxGeometry x="110" y="90" width="600" height="180" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="无麦K歌" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;horizontal=1;verticalAlign=top;" vertex="1" parent="1">
+                    <mxGeometry x="140" y="130" width="230" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" value="全名K歌" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;" vertex="1" parent="1">
+                    <mxGeometry x="450" y="130" width="230" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="18" value="" style="edgeStyle=none;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="7" target="11">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="7" value="AudioRecord" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+                    <mxGeometry x="505" y="160" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="17" value="" style="edgeStyle=none;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="8" target="12">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" value="AudioRecord" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+                    <mxGeometry x="195" y="160" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="20" value="" style="edgeStyle=none;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="11" target="13">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="11" value="RecordThread" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#60a917;strokeColor=#2D7600;fontColor=#ffffff;" vertex="1" parent="1">
+                    <mxGeometry x="440" y="380" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="19" value="" style="edgeStyle=none;html=1;entryX=0.488;entryY=0.033;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="12" target="13">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="420" y="555" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="12" value="RecordThread" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#60a917;strokeColor=#2D7600;fontColor=#ffffff;" vertex="1" parent="1">
+                    <mxGeometry x="280" y="380" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="13" value="AudioHAl" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+                    <mxGeometry x="120" y="500" width="600" height="60" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

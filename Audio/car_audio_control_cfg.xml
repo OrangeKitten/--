@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (C) 2021 Galaxy Auto Technology
+
+  All Rights Reserved by Galaxy Auto Technology Co., Ltd and its affiliates.
+  You may not use, copy, distribute, modify, transmit in any form this file
+  except in compliance with Galaxy Auto Technology in writing by applicable law.
+-->
+
+<audio_control_cfg>
+  <zone name="primaryZone" isPrimary="true" zoneId="0">
+    <volume_groups volume_adaptive_on="1"
+                 defaultGroupIdForAdjustment="1"
+                 settingVolumeBehaviors="0"
+                  version="2">
+      <volume_group name="media" groupId="1" minVolume="0" maxVolume="100" volume_default="30" mute_default="0" adaptive_max_volume="50" adaptive_min_volume="20" priority="1">
+        <device id="0" address="bus0_media_out">
+          <aosp_usage name="USAGE_UNKNOWN" value="0"/>
+          <aosp_usage name="USAGE_GAME" value="14"/>
+          <aosp_usage name="USAGE_MEDIA" value="1"/>
+        </device>
+      </volume_group>
+      <volume_group name="media_hifi_712" groupId="1" minVolume="0" maxVolume="100" volume_default="30" mute_default="0" adaptive_max_volume="60" adaptive_min_volume="30" priority="1">
+        <device id="15" address="bus15_media_hifi_714_out">
+          <aosp_usage name="USAGE_UNKNOWN" value="0"/>
+          <aosp_usage name="USAGE_MEDIA" value="1"/>
+        </device>
+      </volume_group>
+      <volume_group name="media_hifi_714" groupId="1" minVolume="0" maxVolume="100" volume_default="30" mute_default="0" adaptive_max_volume="60" adaptive_min_volume="30" priority="1">
+        <device id="16" address="bus16_media_hifi_714_out">
+          <aosp_usage name="USAGE_UNKNOWN" value="0"/>
+          <aosp_usage name="USAGE_MEDIA" value="1"/>
+        </device>
+      </volume_group>
+      <volume_group name="media_hifi" groupId="1" minVolume="0" maxVolume="100" volume_default="30" mute_default="0" adaptive_max_volume="60" adaptive_min_volume="30" priority="1">
+        <device id="14" address="bus14_media_stereo_32bit_out">
+          <aosp_usage name="USAGE_UNKNOWN" value="0"/>
+          <aosp_usage name="USAGE_MEDIA" value="1"/>
+        </device>
+      </volume_group>
+      <volume_group name="navigation" groupId="2" minVolume="0" maxVolume="100" volume_default="50" mute_default="0" priority="3">
+        <device id="1" address="bus1_navigation_out">
+          <aosp_usage name="USAGE_ASSISTANCE_NAVIGATION_GUIDANCE" value="12"/>
+        </device>
+      </volume_group>
+      <volume_group name="phone" groupId="3" minVolume="10" maxVolume="100" mute_default="0" volume_default="50" priority="5" focusUsages="0,-16,-17" focusUpdateVol="1">
+        <device id="4" address="bus4_call_out">
+          <aosp_usage name="USAGE_VOICE_COMMUNICATION" value="2"/>
+          <aosp_usage name="USAGE_VOICE_COMMUNICATION_SIGNALLING" value="3"/>
+          <aosp_usage name="USAGE_NOTIFICATION_COMMUNICATION_REQUEST" value="7"/>
+        </device>
+      </volume_group>
+      <volume_group name="voice" groupId="4" minVolume="10" maxVolume="100" mute_default="0" volume_default="50" priority="4">
+        <device id="2" address="bus2_voice_command_out">
+          <aosp_usage name="USAGE_NOTIFICATION_COMMUNICATION_INSTANT" value="8"/>
+          <aosp_usage name="USAGE_NOTIFICATION_COMMUNICATION_DELAYED" value="9"/>
+          <aosp_usage name="USAGE_NOTIFICATION_EVENT" value="10"/>
+          <aosp_usage name="USAGE_ASSISTANCE_ACCESSIBILITY" value="11"/>
+          <aosp_usage name="USAGE_ASSISTANT" value="16"/>
+        </device>
+      </volume_group>
+      <volume_group name="notification" groupId="5" minVolume="0" maxVolume="100" mute_default="0" volume_default="80" priority="2">
+        <device id="6" address="bus6_notification_out">
+          <aosp_usage name="USAGE_ALARM" value="4"/>
+          <aosp_usage name="USAGE_NOTIFICATION" value="5"/>
+          <aosp_usage name="USAGE_ASSISTANCE_SONIFICATION" value="13"/>
+        </device>
+      </volume_group>
+      <volume_group name="ebcall" groupId="6" minVolume="90" maxVolume="90" volume_default="90" priority="7" focusUsages="16,17" focusUpdateVol="1">
+        <device id="8" address="bus8_ecall_ring_out">
+        </device>
+      </volume_group>
+      <volume_group name="left_headrest" groupId="9" minVolume="0" maxVolume="100" volume_default="50" priority="7">
+        <device id="-9" address="no_bus">
+        </device>
+      </volume_group>
+      <volume_group name="right_headrest" groupId="10" minVolume="0" maxVolume="100" volume_default="50" priority="7">
+        <device id="-10" address="no_bus">
+        </device>
+      </volume_group>
+      <volume_group name="ring" groupId="11" minVolume="10" maxVolume="100" mute_default="0" volume_default="50" priority="6">
+        <device id="3" address="bus3_call_ring_out">
+          <aosp_usage name="USAGE_NOTIFICATION_RINGTONE" value="6"/>
+        </device>
+      </volume_group>
+      <volume_group name="out_media" groupId="12" minVolume="0" maxVolume="100" volume_default="50" priority="7">
+        <device id="-12" address="no_bus">
+        </device>
+      </volume_group>
+      <volume_group name="occ_tts" groupId="13" minVolume="0" maxVolume="100" volume_default="80" priority="7">
+        <device id="17" address="bus17_occ_tts_out">
+          <aosp_usage name="USAGE_SY_OCC_TTS" value="101"/>
+        </device>
+      </volume_group>
+      <volume_group name="ambienc" groupId="14" minVolume="0" maxVolume="100" volume_default="30" priority="7">
+        <device id="19" address="bus19_atmosphere_out">
+          <aosp_usage name="USAGE_SY_ATMOSPHERE" value="100"/>
+        </device>
+      </volume_group>
+
+      <volume_group name="auto_tts" groupId="15" minVolume="10" maxVolume="100" volume_default="50" priority="7">
+        <device id="18" address="bus18_auto_tts_out">
+          <aosp_usage name="USAGE_SY_AUTO_TTS" value="102"/>
+        </device>
+      </volume_group>
+
+    </volume_groups>
+  </zone>
+  <zone name="rearSeatZone" zoneId="10">
+    <volume_groups volume_adaptive_on="1"
+                 defaultGroupIdForAdjustment="1"
+                 settingVolumeBehaviors="0"
+                  version="2">
+      <volume_group name="A2DP" groupId="1" minVolume="0" maxVolume="100" volume_default="30" mute_default="0" adaptive_max_volume="50" adaptive_min_volume="20" priority="1">
+        <device id="100" address="bus100_bt_a2dp_out" zoneId="10">
+          <aosp_usage name="USAGE_UNKNOWN" value="0"/>
+          <aosp_usage name="USAGE_GAME" value="14"/>
+          <aosp_usage name="USAGE_MEDIA" value="1"/>
+        </device>
+      </volume_group>
+    </volume_groups>
+  </zone>
+
+  <dts enable="0">
+    <trdsound_mode value="0" name="AUDIO_EFFECT_MODE_NATURE"/>
+  </dts>
+
+  <equalizers preset_default="1">
+    <equalizer preset="0" name="PRESET_EQUALIZER_TYPE_CUSTOM"/>
+    <equalizer preset="1" name="PRESET_EQUALIZER_TYPE_CLASSICAL"/>
+    <equalizer preset="2" name="PRESET_EQUALIZER_TYPE_JAZZ"/>
+    <equalizer preset="3" name="PRESET_EQUALIZER_TYPE_ROCK"/>
+    <equalizer preset="4" name="PRESET_EQUALIZER_TYPE_POP"/>
+    <equalizer preset="5" name="PRESET_EQUALIZER_TYPE_DEFAULT"/>
+  </equalizers>
+
+  <bmt_filters>
+    <filter type="3" name="bass" level_default="0" max_level="10" min_level="-10"/>
+    <filter type="2" name="middle" level_default="0" max_level="10" min_level="-10"/>
+    <filter type="1" name="treble" level_default="0" max_level="10" min_level="-10"/>
+  </bmt_filters>
+
+  <balance value_max="10" value_min="-10" value_default="0"/>
+  <fade value_max="10" value_min="-10" value_default="0"/>
+
+  <custom_settings>
+    <param param="1001" name="surround_mode" flags_mask="1,2,3,5" value_default="2">
+      <value value="0" name="SURROUND_MODE_OFF"/>
+      <value value="1" name="SURROUND_MODE_DRIVER"/>
+      <value value="2" name="SURROUND_MODE_ALL_PASSENGERS"/>
+    </param>
+    <param param="1002" name="sound_fx" flags_mask="1,2,3,5" value_default="0">
+      <value value="0" name="SOUND_FX_MODE_NATURE"/>
+      <value value="1" name="SOUND_FX_MODE_BRIGHT_VOICE"/>
+      <value value="2" name="SOUND_FX_MODE_OVER_WEIGHT"/>
+      <value value="3" name="SOUND_FX_MODE_REST"/>
+    </param>
+    <param param="1003" name="svc_mode" flags_mask="1,2,5" value_default="2">
+      <value value="0" name="SVC_MODE_NO_CORRELATION"/>
+      <value value="1" name="SVC_MODE_WEAK_CORRELATION"/>
+      <value value="2" name="SVC_MODE_GENERAL_CORRELATION"/>
+      <value value="3" name="SVC_MODE_STRONG_CORRELATION"/>
+    </param>
+  </custom_settings>
+</audio_control_cfg>
