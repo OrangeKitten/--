@@ -91,7 +91,7 @@ void MediaExtractorFactory::RegisterExtractor(const sp<ExtractorPlugin> &plugin,
         ALOGE("extractors should have a name, ignoring");
         return;
     }
-    // 2.遍历plugList 获取其中对象与plugin比较，如果uuid相同那么久比较version，保留version大的
+    // 2.遍历plugList 获取其中对象与plugin比较，如果uuid相同那么就比较version，保留version大的
     for (auto it = pluginList.begin(); it != pluginList.end(); ++it) {
         if (memcmp(&((*it)->def.extractor_uuid), &plugin->def.extractor_uuid, 16) == 0) {
             // there's already an extractor with the same uuid
@@ -310,7 +310,7 @@ static CMediaExtractor* CreateExtractor(
 
 ```
 可以看到这个Sniff的工作分为两个步骤：
-1. 读取AAC头自己个数，然后判断当前数据是否符合AAC的头数据
+1. 读取包含AAC头的字节，然后判断当前数据是否符合AAC的头数据
 2. 创建一个Extractor，这个Extractor可谓是层层封装.
 经过sniff就获取了创建目标Extractor的函数指针。
 
@@ -392,7 +392,7 @@ sp<IMediaExtractorService> mediaExService(
                     mime ? std::optional<std::string>(mime) : std::nullopt,
                     &ex);
 ```
-ex是IMediaExtractor的Binder代理对与客户端其实就是BpMediaEXtractor,由于进程之间存在地址隔离因此要把mediaserver进程的source传入给mediaextractor那么就需要使用Binder进行跨进程通信,把source封装成RemoteDataSource.
+ex是IMediaExtractor的Binder代理对于客户端其实就是BpMediaEXtractor,由于进程之间存在地址隔离因此要把mediaserver进程的source传入给mediaextractor那么就需要使用Binder进行跨进程通信,把source封装成RemoteDataSource.
 ```c++
     explicit RemoteDataSource(const sp<DataSource> &source) {
         Mutex::Autolock lock(mLock);
@@ -711,7 +711,7 @@ void NuPlayer::GenericSource::readBuffer(media_track_type trackType,
       // 尝试一次性读取多个 buffer
       err = source->readMultiple(&mediaBuffers, maxBuffers - numBuffers, &options);
     } else {
-      /* 传统的、一次只读一个 buffer，另外注意这个buffer实在各个extractor中new出来的，
+      /* 传统的、一次只读一个 buffer，另外注意这个buffer是在各个extractor中new出来的，
       每个extractor都会继承一个MediaTrackHelper，在MediaTrackHelper中存在mBufferGroup，
       使用这个申请内存的 代码如下：
           MediaBufferHelper* mediaBuffer;
@@ -867,7 +867,7 @@ void NuPlayer::GenericSource::readBuffer(media_track_type trackType,
   }
 }
 ```
-但目前位置我们已经知道了数据是如何从source到extrator,然后在GenericSource中把demux之后的数据存入到AnotherPacketSource中的buff中,那么还要在看一下这个数据是如何连续的流动起来的的.那么就要看哪里调用了postReadBuffer,在GenericSource.cpp中dequeueAccessUnit函数会多次调用.
+到目前为止我们已经知道了数据是如何从source到extrator,然后在GenericSource中把demux之后的数据存入到AnotherPacketSource中的buff中,那么还要在看一下这个数据是如何连续的流动起来的的.那么就要看哪里调用了postReadBuffer,在GenericSource.cpp中dequeueAccessUnit函数会多次调用.
 `NuPlayer::GenericSource::dequeueAccessUnit` 是连接*数据生产者（`GenericSource`）* 和*数据消费者（`Decoder`）*的桥梁。这个函数不仅提供数据，还包含了触发后续数据读取和缓冲管理的关键逻辑。
 ```c++
 // NuPlayer::GenericSource::dequeueAccessUnit
@@ -1135,7 +1135,7 @@ sequenceDiagram
    - 创建 `MediaBuffer` 对象，包含：
      - 音频/视频数据
      - 元数据（时间戳、格式信息等）
-   - 通过 Binder 将 `MediaBuffer` 返回给 NuPlayer 进程
+   - 通过 Binder 将 `MediaBuffer` 返回给 NuPlayer 进程   MediaBuffer 在system中也是使用的共享内存，MediaBuffer中封装了一个共享内存地址
 
 ### 为什么使用两种不同的通信方式？
 
@@ -1313,6 +1313,7 @@ bool NuPlayer::Decoder::doRequestBuffers() {
         size_t bufferIx = *mDequeuedInputBuffers.begin();
         sp<AMessage> msg = new AMessage();
         msg->setSize("buffer-ix", bufferIx);
+        //从source中获取为解码数据存入到buffer中
         err = fetchInputData(msg);
         if (err != OK && err != ERROR_END_OF_STREAM) {
             // if EOS, need to queue EOS buffer

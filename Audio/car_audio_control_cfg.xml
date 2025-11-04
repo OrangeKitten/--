@@ -162,4 +162,29 @@
       <value value="3" name="SVC_MODE_STRONG_CORRELATION"/>
     </param>
   </custom_settings>
+
+  <!-- 配置音效默认值 -->
+  <defaults>
+    <default key="general_effect_alias" value="1" />
+    <default key="general_effect_scence" value="0" />
+    <default key="general_effect_mode" value="1" />
+    <default key="anc_enable" value="1" />
+    <default key="ext_mode" value="1" />
+    <default key="general_sweetarea" value="2" />
+    <default key="ambience_mode" value="0" />
+    <default key="occ_state" value="0" />
+    <default key="occ_type" value="0" />
+    <default key="out_media_mode" value="0" />
+    <default key="avas_switch" value="1" />
+    <default key="avas_style" value="1" />
+    <default key="ese_enable" value="0" />
+    <default key="ese_style" value="1" />
+    <default key="low_battery_mode" value="0" />
+    <default key="media_status_when_reversing" value="2" />
+    <default key="headrest_mode" value="2" />
+    <default key="adigo_mode" value="1" />
+    <default key="best_listening_phoneme" value="1" />
+    <default key="yamaha_mode" value="0" />
+  </defaults>
+
 </audio_control_cfg>
