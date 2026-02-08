@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>dolby&#x5305;&#x542b;&#x54ea;&#x4e9b;&#x97f3;&#x9891;&#x683c;&#x5f0f;</title>
+            <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only],
+.vscode-high-contrast:not(.vscode-high-contrast-light) img[src$=\#gh-light-mode-only],
+.vscode-high-contrast-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+            
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+<style>
+:root {
+  --color-note: #0969da;
+  --color-tip: #1a7f37;
+  --color-warning: #9a6700;
+  --color-severe: #bc4c00;
+  --color-caution: #d1242f;
+  --color-important: #8250df;
+}
+
+</style>
+<style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-note: #2f81f7;
+    --color-tip: #3fb950;
+    --color-warning: #d29922;
+    --color-severe: #db6d28;
+    --color-caution: #f85149;
+    --color-important: #a371f7;
+  }
+}
+
+</style>
+<style>
+.markdown-alert {
+  padding: 0.5rem 1rem;
+  margin-bottom: 16px;
+  color: inherit;
+  border-left: .25em solid #888;
+}
+
+.markdown-alert>:first-child {
+  margin-top: 0
+}
+
+.markdown-alert>:last-child {
+  margin-bottom: 0
+}
+
+.markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  line-height: 1
+}
+
+.markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.5rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-alert.markdown-alert-note {
+  border-left-color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-alert.markdown-alert-important {
+  border-left-color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+.markdown-alert.markdown-alert-warning {
+  border-left-color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-alert.markdown-alert-tip {
+  border-left-color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-alert.markdown-alert-caution {
+  border-left-color: var(--color-caution);
+}
+
+.markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+</style>
+        
+        </head>
+        <body class="vscode-body vscode-light">
+            <h2 id="dolby包含哪些音频格式">dolby包含哪些音频格式</h2>
+<table>
+<thead>
+<tr>
+<th>编码技术</th>
+<th>声道支持</th>
+<th>特点*</th>
+<th>主要用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dolby Digital （AC-3）</td>
+<td>5.1</td>
+<td>有损压缩，经典环绕声</td>
+<td>DVD、蓝光、数字电视</td>
+</tr>
+<tr>
+<td>Dolby Digital Plus  （EAC3）</td>
+<td>7.1</td>
+<td>更高音质和压缩效率</td>
+<td>流媒体、蓝光</td>
+</tr>
+<tr>
+<td>Dolby TrueHD</td>
+<td>7.1</td>
+<td>无损音频，高保真</td>
+<td>蓝光、高端影院</td>
+</tr>
+<tr>
+<td>Dolby AC-4</td>
+<td>无限</td>
+<td>高效压缩，支持三维音频</td>
+<td>广播、流媒体</td>
+</tr>
+<tr>
+<td>Dolby MAT</td>
+<td>无限</td>
+<td>实时传输，无损 PCM，支持 Dolby Atmos</td>
+<td>游戏主机、HDMI 音频传输</td>
+</tr>
+</tbody>
+</table>
+<p>在星河车机上目前支持eac3、eac3-joc、ac3。
+其他的几种音频格式在电视上常用，比如Dolby TrueHD会出现在蓝光光盘中、AC4出现在广播电视或者流媒体中，Mat出现在XBOX输送到TV的音频流中。</p>
+<h2 id="为什么需要dolby解码">为什么需要dolby解码</h2>
+<p>对于客户来说是为了获取更好的听觉体验。
+对于我们研发来说使用dolby解码库不用其他免费的解码库如ffmpeg，是因为其他解码库能力不够，解析不了ac4、TrueHD、Mat。就算支持ac3、eac3但是也解析不出来该音频格式中专业的杜比特性比如动态范围控制、atmos信息等。
+对于产品本身来说需要过杜比认证，使产品打上杜比认证的标志那就不得不用dolby提供的解码库了。</p>
+<h2 id="解码方案对比">解码方案对比</h2>
+<h3 id="1-集成在-c2-模块">1. 集成在 C2 模块</h3>
+<p>C2（Codec 2.0）模块是 Android 音频框架的一部分，负责音频/视频编解码和处理。目前星河使用该方案集成dobly库。</p>
+<ul>
+<li><img src="file:///d:\code\文档\Audio\方案分析\dolby\dolby_c2.png" alt="alt text"></li>
+</ul>
+<h4 id="优点">优点：</h4>
+<ul>
+<li><strong>框架层集成</strong>：
+<ul>
+<li>集成在 C2 模块意味着杜比库直接嵌入 Android 多媒体框架，能够处理来自应用层的音频流。</li>
+</ul>
+</li>
+<li><strong>跨平台支持</strong>：
+<ul>
+<li>C2 模块是 Android 的一部分，适配性较好，便于移植到不同硬件平台。</li>
+</ul>
+</li>
+<li><strong>灵活性</strong>：
+<ul>
+<li>可以支持不同的音频格式和场景（如媒体播放、视频流等），适合需要对多种音频流进行统一处理的场景。</li>
+</ul>
+</li>
+<li><strong>开发效率高</strong>：
+<ul>
+<li>利用 Android 音频框架现有的 API 和接口，减少底层开发工作。</li>
+</ul>
+</li>
+</ul>
+<h4 id="缺点">缺点：</h4>
+<ul>
+<li><strong>性能开销较高</strong>：
+<ul>
+<li>传输给AudioServer的数据为解码后的PCM数据，相比解码前的数据，数据量要更大。因此需要更大的内存空间传输数据。</li>
+</ul>
+</li>
+<li><strong>实时性较差</strong>：
+<ul>
+<li>由于音频流需要经过 Android 音频框架的多个层级（应用层 → Audio HAL → DSP），可能会引入延迟，不适合对实时性要求极高的场景。</li>
+</ul>
+</li>
+</ul>
+<h4 id="适用场景">适用场景：</h4>
+<ul>
+<li>媒体播放、导航语音等非实时性要求较高的场景。</li>
+<li>项目开发周期紧张，优先考虑快速集成的场景。</li>
+</ul>
+<h3 id="2-集成在-audio-hal">2. 集成在 Audio HAL</h3>
+<p>Audio HAL（Hardware Abstraction Layer）是 Android 音频框架与硬件之间的抽象层，负责音频数据的传递和处理。
+<img src="file:///d:\code\文档\Audio\方案分析\dolby\dolby_hal.png" alt="alt text">
+一些电视厂商使用类似的方案，方案结构图如下：</p>
+<p><img src="file:///d:\code\文档\Audio\方案分析\dolby\dolby_tv.png" alt="alt text">
+对于电视而言需要有两大功能需要dobly的能力，一种就是本地播放、网络播放这种数据从audiohal送下来的情况。另一种就是传统的广播电视，该数据可以不通过audiohal,在vendor区直传给输出模块（AudioOutPut）。
+电视厂商把dobly编解码库集成在了AudioOutput模块中，该模块不仅可以处理Audiohal送下来的数据，还可以处理DTV的送过来的数据。另外电视的很多功能是需要dolby音效库支持的，比如音频描述、对话增强、自定义最佳听觉位置等。
+音频描述功能是基于AC4音频格式来完成的，AC4格式会会有Substream与Presentations的概念，音频描述可以使某个Substream的音量降低。
+<img src="file:///d:\code\文档\Audio\方案分析\dolby\ac4.png" alt="alt text">
+从下图可知dolby释放出来的功能不仅有decode还有encodec功能、Mix、resampled 功能。
+<img src="file:///d:\code\文档\Audio\方案分析\dolby\dolby.png" alt="alt text"></p>
+<h4 id="优点-1">优点：</h4>
+<ul>
+<li><strong>较高的性能</strong>：
+<ul>
+<li>Audio HAL 位于音频框架的中间层，直接与硬件交互，可以减少数据处理的层级，提升性能。</li>
+</ul>
+</li>
+<li><strong>灵活性适中</strong>：
+<ul>
+<li>可以根据具体硬件平台优化杜比库的性能，例如针对不同的音频设备（扬声器、耳机）进行调优。</li>
+</ul>
+</li>
+<li><strong>实时性较好</strong>：
+<ul>
+<li>相比集成在 C2 模块，音频数据在 HAL 层处理可以减少延迟，适合实时性要求较高的场景。</li>
+</ul>
+</li>
+<li><strong>硬件适配性增强</strong>：
+<ul>
+<li>可以直接调用硬件相关的接口，部分杜比算法可以结合硬件特性优化。</li>
+</ul>
+</li>
+</ul>
+<h4 id="缺点-1">缺点：</h4>
+<ul>
+<li><strong>开发复杂度较高</strong>：
+<ul>
+<li>Audio HAL 的集成需要对 Android 音频框架和硬件驱动有深入了解，开发和调试成本较高。</li>
+</ul>
+</li>
+<li><strong>硬件依赖性增强</strong>：
+<ul>
+<li>HAL 层的实现通常与具体硬件平台绑定，移植性较差，可能需要针对不同硬件平台进行适配。</li>
+</ul>
+</li>
+<li><strong>灵活性不如 C2 模块</strong>：
+<ul>
+<li>HAL 层主要处理音频输出，无法轻松支持复杂的多媒体场景（如视频播放中的杜比音频解码）。</li>
+</ul>
+</li>
+</ul>
+<h4 id="适用场景-1">适用场景：</h4>
+<ul>
+<li>对实时性要求较高的场景，如导航语音、通话音频处理。</li>
+<li>硬件资源有限，需要优化性能的场景。</li>
+</ul>
+<hr>
+<h3 id="3-集成在-dsp-server">3. 集成在 DSP Server</h3>
+<p>DSP Server 是运行于 DSP（Digital Signal Processor）上的音频处理服务，专门用于音频处理和优化。
+<img src="file:///d:\code\文档\Audio\方案分析\dolby\dolby_dsp.png" alt="alt text"></p>
+<h4 id="优点-2">优点：</h4>
+<ul>
+<li><strong>最高的性能</strong>：
+<ul>
+<li>音频处理直接在 DSP 上完成，利用专用硬件加速能力，性能远高于 CPU 处理。</li>
+</ul>
+</li>
+<li><strong>最低的延迟</strong>：
+<ul>
+<li>音频数据直接在 DSP 中处理，避免了数据在多个框架层级间的传递，延迟最低。</li>
+</ul>
+</li>
+<li><strong>硬件资源优化</strong>：
+<ul>
+<li>减轻了主 CPU 的负载，释放更多资源给其他任务。</li>
+</ul>
+</li>
+<li><strong>专业音频处理能力</strong>：
+<ul>
+<li>DSP 通常针对音频处理进行了优化，适合复杂的音频算法（如杜比的环绕声、动态范围控制等）。</li>
+</ul>
+</li>
+</ul>
+<h4 id="缺点-2">缺点：</h4>
+<ul>
+<li><strong>硬件依赖性强</strong>：
+<ul>
+<li>集成在 DSP 上需要针对特定的硬件平台进行适配，移植性差。</li>
+</ul>
+</li>
+<li><strong>开发复杂度最高</strong>：
+<ul>
+<li>需要深入了解 DSP 硬件架构和编程模型，同时可能需要编写低层驱动和接口。</li>
+</ul>
+</li>
+<li><strong>灵活性较低</strong>：
+<ul>
+<li>DSP 的资源通常有限，可能无法同时处理多种音频流或支持复杂的场景。</li>
+</ul>
+</li>
+<li><strong>调试难度大</strong>：
+<ul>
+<li>DSP 上的代码调试工具有限，调试过程复杂。</li>
+</ul>
+</li>
+</ul>
+<h4 id="适用场景-2">适用场景：</h4>
+<ul>
+<li>对性能和实时性要求极高的场景，例如车载娱乐系统中的高品质音频播放或主动降噪。</li>
+<li>硬件资源丰富且项目周期允许进行底层开发的场景。</li>
+</ul>
+<hr>
+<h3 id="对比总结">对比总结</h3>
+<table>
+<thead>
+<tr>
+<th>集成位置</th>
+<th>优点</th>
+<th>缺点</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C2 模块</td>
+<td>- 开发效率高<br>- 跨平台支持好<br>- 适合多种音频场景</td>
+<td>- 性能开销较高<br>- 延迟较大<br>- 无法利用硬件加速</td>
+<td>媒体播放、导航语音等非实时场景</td>
+</tr>
+<tr>
+<td>Audio HAL</td>
+<td>- 性能较高<br>- 延迟较低<br>- 硬件适配能力较强</td>
+<td>- 开发复杂度较高<br>- 硬件依赖性增强<br>- 灵活性低于 C2 模块</td>
+<td>导航语音、通话音频、对实时性要求较高的场景</td>
+</tr>
+<tr>
+<td>DSP Server</td>
+<td>- 性能最高<br>- 延迟最低<br>- 减轻 CPU 负载<br>- 适合复杂音频算法处理</td>
+<td>- 硬件依赖性强<br>- 开发复杂度最高<br>- 灵活性较低<br>- 调试难度大</td>
+<td>高品质音频播放、主动降噪、对实时性和性能要求极高的场景</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="推荐选择"><strong>推荐选择</strong></h3>
+<ol>
+<li>
+<p><strong>项目优先级为快速集成且硬件资源有限</strong>：</p>
+<ul>
+<li><strong>选择 C2 模块</strong>，开发效率高，适合快速交付的项目。</li>
+</ul>
+</li>
+<li>
+<p><strong>对实时性和性能有一定要求，且硬件资源充足</strong>：</p>
+<ul>
+<li><strong>选择 Audio HAL</strong>，在性能和开发复杂度之间取得平衡。</li>
+</ul>
+</li>
+<li>
+<p><strong>对性能和实时性要求极高，且硬件平台支持 DSP</strong>：</p>
+<ul>
+<li><strong>选择 DSP Server</strong>，充分利用硬件加速能力，适合高端车载娱乐系统。</li>
+</ul>
+</li>
+</ol>
+<p>最终的选择应根据项目的具体需求、硬件平台能力、开发周期和团队技术能力综合考虑。</p>
+
+            
+            
+        </body>
+        </html>

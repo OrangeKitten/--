@@ -2654,7 +2654,7 @@ audioManager.unregisterEventChangeListener(eventListener);
 
 | 项目 | 说明 |
 |------|------|
-| `方法签名` | `public int setSoundEffect(@EffectScence int scence, int mode, @SweetArea int area)` |
+| `方法签名` | `public int setSoundEffect(@EffectSc ence int scence, int mode, @SweetArea int area)` |
 | `函数作用` | 设置音效(自动保存到系统) |
 | `参数说明` | `scence` - 音效场景<br>`mode` - 音效模式(根据场景而定)<br>`area` - 最佳听音位 |
 | `返回值` | `int` - 操作结果(Result.NOT_SUPPORT表示不支持) |
@@ -3039,7 +3039,7 @@ if(currentMode == OutMediaMode.OUTCAR) {
 ## AVAS低速行人提示音功能接口
 
 ### AVASStyle 提示音风格
-
+#.
 | 常量 | 值 | 说明 |
 |------|----|------|
 | `OFF` | 0 | 关闭提示音 |

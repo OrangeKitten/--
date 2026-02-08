@@ -867,7 +867,7 @@ status_t NuPlayer::GenericSource::initFromDataSource() {
     int32_t totalBitrate = 0;
     //4. 记录AVTrack 的信息到mSource中
     for (size_t i = 0; i < numtracks; ++i) {
-        sp<IMediaSource> track = extractor->getTrack(i);
+        sp<IMediaSource> track = extractor->getTrack(i); // 在extracor中会创建对应的source，比如AACSOURCE 
         sp<MetaData> meta = extractor->getTrackMetaData(i);
 // mime保存的数据为 audio/aac   video/mp4  image/jpeg这种
         const char *mime;
