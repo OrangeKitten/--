@@ -1,0 +1,312 @@
+<mxfile host="65bd71144e">
+    <diagram id="Vzo7iFo8isfkJZzHYb0q" name="llm">
+        <mxGraphModel dx="2553" dy="748" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="4" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="2" target="3">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="自然语言" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="4">
+                    <mxGeometry x="-0.2" y="2" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="2" value="" style="shape=actor;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+                    <mxGeometry x="190" y="220" width="40" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="LLM" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;glass=0;shadow=0;" vertex="1" parent="1">
+                    <mxGeometry x="150" y="350" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="k81tdOJ7F7ERzxUWV1NF-5" value="用户直接跟LLM 交互，但是LLM需要信息，只能用户&lt;div&gt;手动输入，这样显得用户呆呆的。因此阶段二出现了&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="-20" y="443" width="300" height="40" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="3meOowfkBYyX7FclBPS5" name="agent">
+        <mxGraphModel dx="2553" dy="748" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="TWaPNLCyl84P3CzPaZtW-1" value="" style="edgeStyle=none;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="TWaPNLCyl84P3CzPaZtW-3" target="TWaPNLCyl84P3CzPaZtW-5">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="190" y="280" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="TWaPNLCyl84P3CzPaZtW-2" value="自然语言" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="TWaPNLCyl84P3CzPaZtW-1">
+                    <mxGeometry x="-0.2" y="2" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="TWaPNLCyl84P3CzPaZtW-3" value="" style="shape=actor;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+                    <mxGeometry x="170" y="180" width="40" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="TWaPNLCyl84P3CzPaZtW-4" value="LLM" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;glass=0;shadow=0;" vertex="1" parent="1">
+                    <mxGeometry x="130" y="580" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="TWaPNLCyl84P3CzPaZtW-5" value="&lt;b&gt;智能体&lt;/b&gt;&lt;div&gt;&lt;b&gt;Agent&lt;/b&gt;&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=center;horizontal=1;verticalAlign=top;" vertex="1" parent="1">
+                    <mxGeometry x="10" y="320" width="360" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="TWaPNLCyl84P3CzPaZtW-8" value="搜索" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="93" y="360" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="TWaPNLCyl84P3CzPaZtW-10" value="脚本执行" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="93" y="420" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="TWaPNLCyl84P3CzPaZtW-11" value="文本读取" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="203" y="360" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="TWaPNLCyl84P3CzPaZtW-13" value="PDF转换" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="203" y="420" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="TWaPNLCyl84P3CzPaZtW-16" value="" style="endArrow=classic;startArrow=classic;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="TWaPNLCyl84P3CzPaZtW-4">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="150" y="570" as="sourcePoint"/>
+                        <mxPoint x="190" y="520" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="TWaPNLCyl84P3CzPaZtW-17" value="自然语言" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="TWaPNLCyl84P3CzPaZtW-16">
+                    <mxGeometry y="-2" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="LEu5hPEogLWLz3XXgXkB-1" value="出现了一个叫做Agen的东西，用户直接跟agen的交互&lt;div&gt;agen跟llm交互，llm有什么需求了可以让agen来帮忙实现&lt;/div&gt;&lt;div&gt;但是LLM的返回信息如果也是自然语言的话，那么agen代码不好实现&lt;/div&gt;&lt;div&gt;因为你不知道LLM会返回什么因此引入了&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="-20" y="650" width="390" height="70" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram name="functioncalling" id="3ZHc02CSUTZ7gSDDH9VF">
+        <mxGraphModel dx="2553" dy="748" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="eE_Z-QmP_hNczaxZfck--0"/>
+                <mxCell id="eE_Z-QmP_hNczaxZfck--1" parent="eE_Z-QmP_hNczaxZfck--0"/>
+                <mxCell id="eE_Z-QmP_hNczaxZfck--2" value="" style="edgeStyle=none;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="eE_Z-QmP_hNczaxZfck--1" source="eE_Z-QmP_hNczaxZfck--4" target="eE_Z-QmP_hNczaxZfck--6">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="190" y="280" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="eE_Z-QmP_hNczaxZfck--3" value="自然语言" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="eE_Z-QmP_hNczaxZfck--2">
+                    <mxGeometry x="-0.2" y="2" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="eE_Z-QmP_hNczaxZfck--4" value="" style="shape=actor;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="eE_Z-QmP_hNczaxZfck--1">
+                    <mxGeometry x="170" y="180" width="40" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="eE_Z-QmP_hNczaxZfck--5" value="LLM" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;glass=0;shadow=0;" vertex="1" parent="eE_Z-QmP_hNczaxZfck--1">
+                    <mxGeometry x="130" y="580" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="eE_Z-QmP_hNczaxZfck--6" value="&lt;b&gt;智能体&lt;/b&gt;&lt;div&gt;&lt;b&gt;Agent&lt;/b&gt;&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=center;horizontal=1;verticalAlign=top;" vertex="1" parent="eE_Z-QmP_hNczaxZfck--1">
+                    <mxGeometry x="10" y="320" width="360" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="eE_Z-QmP_hNczaxZfck--7" value="搜索" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="eE_Z-QmP_hNczaxZfck--1">
+                    <mxGeometry x="93" y="360" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="eE_Z-QmP_hNczaxZfck--8" value="脚本执行" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="eE_Z-QmP_hNczaxZfck--1">
+                    <mxGeometry x="93" y="420" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="eE_Z-QmP_hNczaxZfck--9" value="文本读取" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="eE_Z-QmP_hNczaxZfck--1">
+                    <mxGeometry x="203" y="360" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="eE_Z-QmP_hNczaxZfck--10" value="PDF转换" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="eE_Z-QmP_hNczaxZfck--1">
+                    <mxGeometry x="203" y="420" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="eE_Z-QmP_hNczaxZfck--11" value="" style="endArrow=classic;startArrow=classic;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="eE_Z-QmP_hNczaxZfck--1" source="eE_Z-QmP_hNczaxZfck--5">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="150" y="570" as="sourcePoint"/>
+                        <mxPoint x="190" y="520" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="eE_Z-QmP_hNczaxZfck--12" value="functioncalling" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="eE_Z-QmP_hNczaxZfck--11">
+                    <mxGeometry y="-2" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="eE_Z-QmP_hNczaxZfck--13" value="出现了一个叫做Agen的东西，用户直接跟agen的交互&lt;div&gt;agen跟llm交互，llm有什么需求了可以让agen来帮忙实现&lt;/div&gt;&lt;div&gt;但是LLM的返回信息如果也是自然语言的话，那么agen代码不好实现&lt;/div&gt;&lt;div&gt;因为你不知道LLM会返回什么因此引入了&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="eE_Z-QmP_hNczaxZfck--1">
+                    <mxGeometry x="-20" y="650" width="390" height="70" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="0YBZlAFxQAEl1z34naCv" name="MCP">
+        <mxGraphModel dx="2553" dy="748" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="WcotkS8EPowHzA5ZsG86-1" value="" style="edgeStyle=none;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="WcotkS8EPowHzA5ZsG86-3" target="WcotkS8EPowHzA5ZsG86-5">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="190" y="280" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="WcotkS8EPowHzA5ZsG86-2" value="自然语言" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="WcotkS8EPowHzA5ZsG86-1">
+                    <mxGeometry x="-0.2" y="2" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="WcotkS8EPowHzA5ZsG86-3" value="" style="shape=actor;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+                    <mxGeometry x="170" y="180" width="40" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="WcotkS8EPowHzA5ZsG86-4" value="LLM" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;glass=0;shadow=0;" vertex="1" parent="1">
+                    <mxGeometry x="-100" y="350" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="r250jyPeO8TAWFJ8JDMz-4" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+                    <mxGeometry x="391" y="207.5" width="140" height="345" as="geometry"/>
+                </mxCell>
+                <mxCell id="WcotkS8EPowHzA5ZsG86-5" value="&lt;b&gt;智能体&lt;/b&gt;&lt;div&gt;&lt;b&gt;Agent&lt;/b&gt;&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=center;horizontal=1;verticalAlign=top;" vertex="1" parent="1">
+                    <mxGeometry x="120" y="330" width="140" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="WcotkS8EPowHzA5ZsG86-6" value="搜索" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+                    <mxGeometry x="421" y="280" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="WcotkS8EPowHzA5ZsG86-7" value="脚本执行" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+                    <mxGeometry x="421" y="485" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="WcotkS8EPowHzA5ZsG86-8" value="文本读取" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+                    <mxGeometry x="421" y="350" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="WcotkS8EPowHzA5ZsG86-9" value="PDF转换" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+                    <mxGeometry x="421" y="420" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="WcotkS8EPowHzA5ZsG86-10" value="" style="endArrow=classic;startArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="WcotkS8EPowHzA5ZsG86-4" target="WcotkS8EPowHzA5ZsG86-5">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="150" y="570" as="sourcePoint"/>
+                        <mxPoint x="190" y="520" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="WcotkS8EPowHzA5ZsG86-11" value="f" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="WcotkS8EPowHzA5ZsG86-10">
+                    <mxGeometry y="-2" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="WcotkS8EPowHzA5ZsG86-15" value="function calling" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="WcotkS8EPowHzA5ZsG86-10">
+                    <mxGeometry y="-6" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r250jyPeO8TAWFJ8JDMz-5" value="" style="endArrow=classic;startArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="WcotkS8EPowHzA5ZsG86-5" target="r250jyPeO8TAWFJ8JDMz-4">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="410" y="445" as="sourcePoint"/>
+                        <mxPoint x="460" y="395" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r250jyPeO8TAWFJ8JDMz-6" value="MCP" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="r250jyPeO8TAWFJ8JDMz-5">
+                    <mxGeometry y="3" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="4D_HdV-H8f52CrFNNDMf-1" value="将智能体的访问外界的能力剥离出来形成MCP模块&lt;div&gt;1.解耦&lt;/div&gt;&lt;div&gt;2.提高稳定性&lt;/div&gt;&lt;div&gt;3.多用户可以访问mcp&lt;/div&gt;&lt;div&gt;4.清晰模块功能 agen是决策大脑，mcp是接触外界的能力&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="-45" y="488" width="330" height="90" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="D9FjVUQaY1njXB1Xyv1Y" name="skill">
+        <mxGraphModel dx="1726" dy="748" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="W5HK5O6FSzl4hcLKMVPa-1" value="" style="edgeStyle=none;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="W5HK5O6FSzl4hcLKMVPa-3" target="W5HK5O6FSzl4hcLKMVPa-8">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="400" y="330" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="W5HK5O6FSzl4hcLKMVPa-2" value="自然语言" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="W5HK5O6FSzl4hcLKMVPa-1">
+                    <mxGeometry x="-0.2" y="2" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="W5HK5O6FSzl4hcLKMVPa-3" value="" style="shape=actor;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+                    <mxGeometry x="380" y="230" width="40" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="W5HK5O6FSzl4hcLKMVPa-4" value="LLM" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;glass=0;shadow=0;" vertex="1" parent="1">
+                    <mxGeometry x="110" y="400" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="W5HK5O6FSzl4hcLKMVPa-5" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+                    <mxGeometry x="601" y="257.5" width="140" height="345" as="geometry"/>
+                </mxCell>
+                <mxCell id="W5HK5O6FSzl4hcLKMVPa-6" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="W5HK5O6FSzl4hcLKMVPa-8" target="W5HK5O6FSzl4hcLKMVPa-18">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="W5HK5O6FSzl4hcLKMVPa-7" value="SKILL" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="W5HK5O6FSzl4hcLKMVPa-6">
+                    <mxGeometry x="-0.38" y="4" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="W5HK5O6FSzl4hcLKMVPa-8" value="&lt;b&gt;智能体&lt;/b&gt;&lt;div&gt;&lt;b&gt;Agent&lt;/b&gt;&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=center;horizontal=1;verticalAlign=top;" vertex="1" parent="1">
+                    <mxGeometry x="330" y="380" width="140" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="W5HK5O6FSzl4hcLKMVPa-9" value="搜索" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+                    <mxGeometry x="631" y="330" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="W5HK5O6FSzl4hcLKMVPa-10" value="脚本执行" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+                    <mxGeometry x="631" y="535" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="W5HK5O6FSzl4hcLKMVPa-11" value="文本读取" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+                    <mxGeometry x="631" y="400" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="W5HK5O6FSzl4hcLKMVPa-12" value="PDF转换" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+                    <mxGeometry x="631" y="470" width="80" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="W5HK5O6FSzl4hcLKMVPa-13" value="" style="endArrow=classic;startArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="W5HK5O6FSzl4hcLKMVPa-4" target="W5HK5O6FSzl4hcLKMVPa-8">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="360" y="620" as="sourcePoint"/>
+                        <mxPoint x="400" y="570" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="W5HK5O6FSzl4hcLKMVPa-14" value="f" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="W5HK5O6FSzl4hcLKMVPa-13">
+                    <mxGeometry y="-2" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="W5HK5O6FSzl4hcLKMVPa-15" value="function calling" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="W5HK5O6FSzl4hcLKMVPa-13">
+                    <mxGeometry y="-6" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="W5HK5O6FSzl4hcLKMVPa-16" value="" style="endArrow=classic;startArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="W5HK5O6FSzl4hcLKMVPa-8" target="W5HK5O6FSzl4hcLKMVPa-5">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="620" y="495" as="sourcePoint"/>
+                        <mxPoint x="670" y="445" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="W5HK5O6FSzl4hcLKMVPa-17" value="MCP" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="W5HK5O6FSzl4hcLKMVPa-16">
+                    <mxGeometry y="3" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="W5HK5O6FSzl4hcLKMVPa-18" value="SKILL" style="whiteSpace=wrap;html=1;verticalAlign=top;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+                    <mxGeometry x="190" y="590" width="420" height="230" as="geometry"/>
+                </mxCell>
+                <mxCell id="W5HK5O6FSzl4hcLKMVPa-19" value="skill.md" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="360" y="621" width="80" height="27" as="geometry"/>
+                </mxCell>
+                <mxCell id="2P-CjiQk3p_lquKanc-K-3" value="scripts" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;verticalAlign=top;flipH=1;" vertex="1" parent="1">
+                    <mxGeometry x="204.5" y="659" width="110" height="112" as="geometry"/>
+                </mxCell>
+                <mxCell id="W5HK5O6FSzl4hcLKMVPa-20" value="to_html.py" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="225" y="728.5" width="80" height="27" as="geometry"/>
+                </mxCell>
+                <mxCell id="W5HK5O6FSzl4hcLKMVPa-21" value="to_pdf.py" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="225" y="691.5" width="80" height="27" as="geometry"/>
+                </mxCell>
+                <mxCell id="2P-CjiQk3p_lquKanc-K-4" value="references" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;verticalAlign=top;flipH=1;" vertex="1" parent="1">
+                    <mxGeometry x="345" y="661.75" width="110" height="106.5" as="geometry"/>
+                </mxCell>
+                <mxCell id="2P-CjiQk3p_lquKanc-K-1" value="&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;skill四部分组成&lt;/div&gt;&lt;div&gt;skill：总统令&lt;/div&gt;&lt;div&gt;scripts：里面存放的脚本&lt;/div&gt;&lt;div&gt;references：按需加载，当输入文本提及会加载&lt;/div&gt;&lt;div&gt;assets：参考的资源&lt;/div&gt;其实我个人感觉skill与mcp有一点点能力重复&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="275" y="800" width="270" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="2P-CjiQk3p_lquKanc-K-5" value="doc.md" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="360" y="691.5" width="80" height="27" as="geometry"/>
+                </mxCell>
+                <mxCell id="2P-CjiQk3p_lquKanc-K-7" value="assets" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;verticalAlign=top;flipH=1;" vertex="1" parent="1">
+                    <mxGeometry x="485.5" y="660" width="110" height="101" as="geometry"/>
+                </mxCell>
+                <mxCell id="2P-CjiQk3p_lquKanc-K-9" value="pic.png" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="510" y="697" width="80" height="27" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
