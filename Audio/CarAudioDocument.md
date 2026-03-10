@@ -2620,6 +2620,17 @@ audioManager.unregisterEventChangeListener(eventListener);
 | `ZEN_GARDEN` | 2 | 禅房花木 |
 | `BABBLING_BROOK` | 3 | 小桥流水 |
 
+### YAMAHAMode_AUDIO3_AMP2 音效模式
+
+| 常量 | 值 | 说明 |
+|------|----|------|
+| `EFFECT_NATURAL` | 0 | 自然原生 |
+| `EFFECT_VOCAL_BOOST` | 1 | 人声增强 |
+| `EFFECT_OVER_BASS` | 2 | 超重低音 |
+| `EFFECT_ELECTRONIC_PARTY` | 3 | 电子派对 |
+| `EFFECT_REVERB` | 4 | 礼堂混响 |
+| `EFFECT_FAMILY_CINEMA` | 5 | 家庭影院 |
+
 ### EffectScence 音效场景
 
 | 常量 | 值 | 说明 |
@@ -2630,6 +2641,8 @@ audioManager.unregisterEventChangeListener(eventListener);
 | `ADIGO_VRLIVE` | 3 | ADIGO虚拟现场模式 |
 | `ADIGO_FAM_CINEMA` | 4 | ADIGO家庭影院模式 |
 | `YAMAHA` | 5 | YAMAHA音效模式 |
+| `YAMAHA_EFFECT_AUDIO3_AMP2` | 6 | YAMAHA 3.2音效模式 |
+
 
 ### SweetArea 最佳听音位
 

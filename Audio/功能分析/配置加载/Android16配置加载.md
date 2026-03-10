@@ -390,3 +390,353 @@ for (const auto& aidlRoute : aidl.routes) {
 3. 哪个 Port ID 找不到
 
 希望这个详细的流程梳理能帮助你理解问题所在！关键是确保 **HAL 提供的每个 Route 的 sinkPortId 和 sourcePortIds 都能在 ports 列表中找到对应的定义**。
+
+
+让我帮你梳理 `mOutputDevices` 的添加流程：
+
+[1 tool called]
+
+现在让我搜索所有添加到 `mOutputDevices` 的地方：
+
+[4 tools called]
+
+现在让我查看 XML 解析时如何添加设备：
+
+[2 tools called]
+
+完美！现在我可以完整梳理 `mOutputDevices` 的添加流程了。让我创建一个详细的流程图：
+
+## `mOutputDevices` 添加流程完整梳理
+
+### 一、添加时机和方式
+
+`mOutputDevices` 在以下**三种场景**下会被添加设备：
+
+---
+
+### **场景 1：从 AIDL HAL 加载配置**
+
+#### 调用链：
+```
+AudioPolicyConfig::loadFromAidl()
+  ↓
+aidl2legacy_AudioHwModules_HwModuleCollection()
+  ↓
+aidl2legacy_AudioHwModule_HwModule()
+  ↓
+attachedOutputDevices->add(devicePort)  // 临时变量
+  ↓
+最终传递给 mOutputDevices
+```
+
+#### 详细流程：
+
+```267:267:/data01/jyxi/8838_new/VENDOR.16.2/frameworks/av/services/audiopolicy/common/managerdefinitions/src/AudioPolicyConfig.cpp
+RETURN_STATUS_IF_ERROR(aidl2legacy_AudioHwModules_HwModuleCollection(aidl.modules,
+                &mHwModules, &mInputDevices, &mOutputDevices, &mDefaultOutputDevice));
+```
+
+**步骤：**
+
+1. **遍历 AIDL 模块中的所有端口**
+   ```cpp
+   for (const auto& aidlPort : aidl.ports)
+   ```
+
+2. **判断是否为 device port**
+   ```cpp
+   if (aidlPort.ext.getTag() == AudioPortExt::device)
+   ```
+
+3. **创建 DeviceDescriptor**
+   ```cpp
+   auto devicePort = sp<DeviceDescriptor>::make(AUDIO_DEVICE_NONE, aidlPort.name);
+   devicePort->readFromParcelable(fwPort);
+   ```
+
+4. **判断是否为已连接设备**（关键判断）
+   ```cpp
+   if (deviceExt.device.type.connection.empty() ||
+       (deviceExt.device.type.type == AudioDeviceType::IN_SUBMIX &&
+        deviceExt.device.address != AudioDeviceAddress()))
+   ```
+
+5. **添加到输出设备列表**
+   ```cpp
+   if (!isInput) {
+       attachedOutputDevices->add(devicePort);
+   }
+   ```
+
+6. **最终赋值给 mOutputDevices**
+   - `attachedOutputDevices` 作为引用参数传递
+   - 直接指向 `mOutputDevices`
+
+---
+
+### **场景 2：从 XML 文件加载配置**
+
+#### 调用链：
+```
+AudioPolicyConfig::loadFromXml()
+  ↓
+deserializeAudioPolicyFile()
+  ↓
+PolicySerializer::deserialize()
+  ↓
+deserializeCollection<ModuleTraits>()
+  ↓
+deserialize<ModuleTraits>()
+  ↓
+处理 <attachedDevices> 标签
+  ↓
+ctx->addDevice(device)
+  ↓
+AudioPolicyConfig::addDevice()
+  ↓
+mOutputDevices.add(device)
+```
+
+#### 详细流程：
+
+**步骤 1：解析 devicePort**
+
+```526:600:/data01/jyxi/8838_new/VENDOR.16.2/frameworks/av/services/audiopolicy/common/managerdefinitions/src/Serializer.cpp
+std::variant<status_t, DevicePortTraits::Element> PolicySerializer::deserialize<DevicePortTraits>(
+        const xmlNode *cur, DevicePortTraits::PtrSerializingCtx /*serializingContext*/)
+{
+    // 读取 tagName, type, role, address 等属性
+    std::string name = getXmlAttribute(cur, Attributes::tagName);
+    std::string typeName = getXmlAttribute(cur, Attributes::type);
+    std::string role = getXmlAttribute(cur, Attributes::role);
+    std::string address = getXmlAttribute(cur, Attributes::address);
+    
+    // 创建 DeviceDescriptor
+    DevicePortTraits::Element deviceDesc =
+            new DeviceDescriptor(type, name, address, encodedFormats);
+    
+    return deviceDesc;
+}
+```
+
+**步骤 2：解析 Module 时处理 attachedDevices**
+
+```xml
+<module name="default">
+    <attachedDevices>
+        <item>Media Bus</item>
+        <item>Nav Guidance Bus</item>
+        ...
+    </attachedDevices>
+    ...
+</module>
+```
+
+对应代码：
+
+```820:850:/data01/jyxi/8838_new/VENDOR.16.2/frameworks/av/services/audiopolicy/common/managerdefinitions/src/Serializer.cpp
+for (const xmlNode *children = cur->xmlChildrenNode; children != NULL;
+     children = children->next) {
+    if (!xmlStrcmp(children->name, reinterpret_cast<const xmlChar*>(childAttachedDevicesTag))) {
+        ALOGV("%s: %s %s found", __func__, tag, childAttachedDevicesTag);
+        for (const xmlNode *child = children->xmlChildrenNode; child != NULL;
+             child = child->next) {
+            if (!xmlStrcmp(child->name,
+                            reinterpret_cast<const xmlChar*>(childAttachedDeviceTag))) {
+                auto attachedDevice = make_xmlUnique(xmlNodeListGetString(
+                                child->doc, child->xmlChildrenNode, 1));
+                if (attachedDevice != nullptr) {
+                    ALOGV("%s: %s %s=%s", __func__, tag, childAttachedDeviceTag,
+                            reinterpret_cast<const char*>(attachedDevice.get()));
+                    sp<DeviceDescriptor> device = module->getDeclaredDevices().
+                            getDeviceFromTagName(std::string(reinterpret_cast<const char*>(
+                                                    attachedDevice.get())));
+                    if (device == NULL) {
+                        // 错误处理
+                        continue;
+                    }
+                    ctx->addDevice(device);  // 关键：添加设备
+                }
+            }
+        }
+    }
+}
+```
+
+**步骤 3：addDevice() 方法**
+
+```107:123:/data01/jyxi/8838_new/VENDOR.16.2/frameworks/av/services/audiopolicy/common/managerdefinitions/include/AudioPolicyConfig.h
+void addDevice(const sp<DeviceDescriptor> &device)
+{
+    if (audio_is_output_device(device->type())) {
+        mOutputDevices.add(device);
+    } else if (audio_is_input_device(device->type())) {
+        mInputDevices.add(device);
+    }
+}
+```
+
+---
+
+### **场景 3：使用默认配置（Fallback）**
+
+#### 调用链：
+```
+AudioPolicyConfig::createDefault()
+  ↓
+AudioPolicyConfig::setDefault()
+  ↓
+mOutputDevices.add(mDefaultOutputDevice)
+```
+
+#### 详细流程：
+
+```307:319:/data01/jyxi/8838_new/VENDOR.16.2/frameworks/av/services/audiopolicy/common/managerdefinitions/src/AudioPolicyConfig.cpp
+void AudioPolicyConfig::setDefault() {
+    mSource = kDefaultConfigSource;
+    mEngineLibraryNameSuffix = kDefaultEngineLibraryNameSuffix;
+
+    mDefaultOutputDevice = new DeviceDescriptor(AUDIO_DEVICE_OUT_SPEAKER);
+    mDefaultOutputDevice->addAudioProfile(AudioProfile::createFullDynamic(gDynamicFormat));
+    sp<DeviceDescriptor> defaultInputDevice = new DeviceDescriptor(AUDIO_DEVICE_IN_BUILTIN_MIC);
+    defaultInputDevice->addAudioProfile(AudioProfile::createFullDynamic(gDynamicFormat));
+    sp<AudioProfile> micProfile = new AudioProfile(
+            AUDIO_FORMAT_PCM_16_BIT, AUDIO_CHANNEL_IN_MONO, 8000);
+    defaultInputDevice->addAudioProfile(micProfile);
+    mOutputDevices.add(mDefaultOutputDevice);  // 添加默认扬声器
+    mInputDevices.add(defaultInputDevice);
+    // ... 其他初始化
+}
+```
+
+---
+
+### 二、完整流程图
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│          AudioPolicyConfig 初始化                            │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                ┌───────────┴───────────┐
+                │                       │
+        ┌───────▼────────┐      ┌──────▼──────────┐
+        │  AIDL HAL 配置  │      │   XML 文件配置   │
+        └───────┬────────┘      └──────┬──────────┘
+                │                       │
+                │                       │
+    ┌───────────▼──────────┐   ┌───────▼────────────┐
+    │ loadFromAidl()       │   │ loadFromXml()      │
+    └───────────┬──────────┘   └───────┬────────────┘
+                │                       │
+                │                       │
+    ┌───────────▼──────────────────────▼────────────┐
+    │  aidl2legacy_AudioHwModules_HwModuleCollection│
+    │  或 deserializeAudioPolicyFile                │
+    └───────────┬───────────────────────────────────┘
+                │
+                │
+    ┌───────────▼──────────────────────────────────┐
+    │  遍历所有 Module                              │
+    └───────────┬──────────────────────────────────┘
+                │
+                │
+    ┌───────────▼──────────────────────────────────┐
+    │  解析 devicePort                              │
+    │  - 读取 tagName, type, role, address         │
+    │  - 创建 DeviceDescriptor                     │
+    └───────────┬──────────────────────────────────┘
+                │
+                │
+    ┌───────────▼──────────────────────────────────┐
+    │  判断是否为已连接设备                          │
+    │  AIDL: connection.empty() 或特殊 submix      │
+    │  XML:  在 <attachedDevices> 中列出           │
+    └───────────┬──────────────────────────────────┘
+                │
+                │ 是已连接设备
+                │
+    ┌───────────▼──────────────────────────────────┐
+    │  判断设备类型                                  │
+    └───────────┬──────────────────────────────────┘
+                │
+        ┌───────┴────────┐
+        │                │
+    ┌───▼────┐      ┌────▼────┐
+    │ 输出设备 │      │ 输入设备 │
+    └───┬────┘      └────┬────┘
+        │                │
+        │                │
+    ┌───▼────────────────▼────┐
+    │ mOutputDevices.add()    │
+    │ mInputDevices.add()     │
+    └─────────────────────────┘
+```
+
+---
+
+### 三、关键判断条件对比
+
+| 配置方式 | 判断是否为已连接设备的条件 |
+|---------|-------------------------|
+| **AIDL HAL** | `connection.empty()` 或 `(IN_SUBMIX && 有地址)` |
+| **XML 文件** | 在 `<attachedDevices>` 标签中明确列出 |
+| **默认配置** | 直接添加 `OUT_SPEAKER` 和 `IN_BUILTIN_MIC` |
+
+---
+
+### 四、以你的 XML 配置为例
+
+```xml
+<module name="default">
+    <attachedDevices>
+        <item>Media Bus</item>
+        <item>Nav Guidance Bus</item>
+        <item>TTS VR Bus</item>
+        <item>Sys Notification Bus</item>
+        <item>Auto TTS Bus</item>
+        <item>tuner_in</item>
+        <item>bus100_bt_a2dp_out</item>
+    </attachedDevices>
+    
+    <devicePorts>
+        <devicePort tagName="Media Bus" role="sink" attached="true" 
+                    deviceType="OUT_BUS" address="BUS00_MEDIA">
+            ...
+        </devicePort>
+        ...
+    </devicePorts>
+</module>
+```
+
+**执行流程：**
+
+1. **解析 `<devicePorts>`**
+   - 创建所有 DeviceDescriptor 对象
+   - 存储在 `module->getDeclaredDevices()` 中
+
+2. **解析 `<attachedDevices>`**
+   - 读取 `<item>Media Bus</item>`
+   - 从 `getDeclaredDevices()` 中查找 tagName="Media Bus" 的设备
+   - 调用 `ctx->addDevice(device)`
+   - 最终调用 `mOutputDevices.add(device)`
+
+3. **结果**
+   - `mOutputDevices` 包含：Media Bus, Nav Guidance Bus, TTS VR Bus, Sys Notification Bus, Auto TTS Bus, bus100_bt_a2dp_out
+   - `mInputDevices` 包含：tuner_in
+
+---
+
+### 五、总结
+
+**`mOutputDevices` 的添加时机：**
+
+1. ✅ **系统启动时**：从 AIDL HAL 或 XML 配置文件加载
+2. ✅ **Fallback 时**：使用默认配置
+3. ❌ **运行时动态添加**：`mOutputDevices` 在 AudioPolicyConfig 中是**只读的**，运行时的设备连接/断开由 AudioPolicyManager 管理
+
+**关键点：**
+- `mOutputDevices` 只包含**已连接的输出设备**
+- 对于 XML 配置，必须在 `<attachedDevices>` 中明确列出
+- 对于 AIDL 配置，根据 `connection` 字段自动判断
+- 可插拔设备（蓝牙、USB 等）**不会**在初始化时添加到 `mOutputDevices`

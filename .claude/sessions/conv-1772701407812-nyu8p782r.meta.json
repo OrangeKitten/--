@@ -1,0 +1,20 @@
+{
+  "id": "conv-1772701407812-nyu8p782r",
+  "title": "hi",
+  "titleGenerationStatus": "failed",
+  "createdAt": 1772701407812,
+  "updatedAt": 1773127138720,
+  "lastResponseAt": 1773127138720,
+  "sessionId": "a8d85adb-702c-4045-a5c4-0365f5035727",
+  "sdkSessionId": "a8d85adb-702c-4045-a5c4-0365f5035727",
+  "currentNote": "日报/2026-W10.md",
+  "usage": {
+    "model": "haiku",
+    "inputTokens": 71924,
+    "cacheCreationInputTokens": 0,
+    "cacheReadInputTokens": 16437,
+    "contextWindow": 200000,
+    "contextTokens": 88361,
+    "percentage": 44
+  }
+}

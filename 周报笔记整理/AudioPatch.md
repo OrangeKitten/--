@@ -1,0 +1,7 @@
+createAudioPatch函数会指定输入输出源 有两种情况
+
+1.如果硬件支持那么就调用audio_hw.c中的adev_create_audio_patch 在audiohal层把两个source连在一起 。
+
+2.如果不支持 那么就会在framework层创建record与play 链路，并且通过
+
+createConnections把两个链路连接起来。

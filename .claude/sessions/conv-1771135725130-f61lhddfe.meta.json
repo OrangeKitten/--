@@ -1,0 +1,19 @@
+{
+  "id": "conv-1771135725130-f61lhddfe",
+  "title": "Greet user",
+  "titleGenerationStatus": "success",
+  "createdAt": 1771135725130,
+  "updatedAt": 1771140035878,
+  "lastResponseAt": 1771140032175,
+  "sessionId": null,
+  "sdkSessionId": "a516bead-54ac-4730-b203-658bb94b2d61",
+  "usage": {
+    "model": "deepseek-chat",
+    "inputTokens": 220,
+    "cacheCreationInputTokens": 0,
+    "cacheReadInputTokens": 54464,
+    "contextWindow": 200000,
+    "contextTokens": 54684,
+    "percentage": 27
+  }
+}

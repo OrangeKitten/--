@@ -1,0 +1,46 @@
+/* Mermaid 图表缩放控制 */
+
+/* 默认缩放 - 适中大小 */
+.mermaid {
+    transform: scale(0.9);
+    transform-origin: top left;
+    transition: transform 0.3s ease;
+}
+
+/* 时序图专用 - 稍大一些便于查看 */
+.mermaid svg[id^="mermaid"] {
+    max-width: 100%;
+    height: auto;
+}
+
+/* 鼠标悬停时放大查看细节 */
+.mermaid:hover {
+    transform: scale(1.0);
+    cursor: zoom-in;
+}
+
+/* 点击后全屏查看（需要配合 JS，这里只是样式准备） */
+.mermaid.zoomed {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(1.5);
+    z-index: 9999;
+    background: white;
+    padding: 20px;
+    box-shadow: 0 0 50px rgba(0,0,0,0.5);
+    max-height: 90vh;
+    overflow: auto;
+}
+
+/* 可选：为不同类型的图表设置不同缩放 */
+/* 流程图 - 稍小 */
+.mermaid svg[id*="flowchart"] {
+    transform: scale(0.85);
+}
+
+/* 时序图 - 保持原大小 */
+.mermaid svg[id*="sequence"] {
+    transform: scale(1.0);
+}
+

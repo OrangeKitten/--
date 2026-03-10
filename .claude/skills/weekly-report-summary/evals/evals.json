@@ -1,0 +1,11 @@
+{
+  "skill_name": "weekly-report-summary",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "总结周报 D:\\code\\文档\\日报\\2026-W10.md",
+      "expected_output": "简洁的Markdown格式，包含完成的任务、Bug解决情况和下周计划",
+      "files": []
+    }
+  ]
+}
