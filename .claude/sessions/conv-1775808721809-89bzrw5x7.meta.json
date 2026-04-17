@@ -1,0 +1,19 @@
+{
+  "id": "conv-1775808721809-89bzrw5x7",
+  "title": "这么命令 现在还能用吗",
+  "titleGenerationStatus": "failed",
+  "createdAt": 1775808721809,
+  "updatedAt": 1776408915609,
+  "lastResponseAt": 1776408915609,
+  "sessionId": "99ae14bd-d407-4a0a-8908-f6d9f2d20145",
+  "sdkSessionId": "99ae14bd-d407-4a0a-8908-f6d9f2d20145",
+  "usage": {
+    "model": "sonnet",
+    "inputTokens": 19213,
+    "cacheCreationInputTokens": 0,
+    "cacheReadInputTokens": 0,
+    "contextWindow": 200000,
+    "contextTokens": 19213,
+    "percentage": 10
+  }
+}

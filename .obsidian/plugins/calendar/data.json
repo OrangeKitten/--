@@ -4,7 +4,7 @@
   "wordsPerDot": 250,
   "showWeeklyNote": true,
   "weeklyNoteFormat": "",
-  "weeklyNoteTemplate": "模板/日报模板-简洁版",
+  "weeklyNoteTemplate": "模板/周报模板-简洁版",
   "weeklyNoteFolder": "日报",
   "localeOverride": "system-default"
 }

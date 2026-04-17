@@ -1,5 +1,5 @@
 {
-  "userName": "",
+  "userName": "大肥",
   "enableBlocklist": true,
   "blockedCommands": {
     "unix": [
@@ -39,8 +39,8 @@
     ]
   },
   "permissionMode": "yolo",
-  "model": "haiku",
-  "thinkingBudget": "off",
+  "model": "sonnet",
+  "thinkingBudget": "medium",
   "enableAutoTitleGeneration": true,
   "titleGenerationModel": "",
   "show1MModel": false,
@@ -66,7 +66,7 @@
   "claudeCliPath": "",
   "claudeCliPathsByHost": {},
   "loadUserClaudeSettings": true,
-  "lastClaudeModel": "haiku",
+  "lastClaudeModel": "sonnet",
   "lastCustomModel": "",
   "lastEnvHash": "",
   "maxTabs": 3,

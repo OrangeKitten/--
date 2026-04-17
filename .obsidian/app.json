@@ -1,4 +1,7 @@
 {
   "promptDelete": false,
-  "attachmentFolderPath": "图床"
+  "attachmentFolderPath": "图床",
+  "foldIndent": true,
+  "readableLineLength": false,
+  "foldHeading": true
 }

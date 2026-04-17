@@ -2606,7 +2606,7 @@ OnEventChangeListener eventListener = new OnEventChangeListener() {
 audioManager.registerEventListener(eventListener);
 
 // 使用后注销监听器
-audioManager.unregisterSettingsChangeListener(settingsListener);
+audioManager.unregisterVolumeChangeListener(settingsListener);
 audioManager.unregisterEventChangeListener(eventListener);
 ```
 ## YAMAHA音效与场景设置

@@ -3,17 +3,17 @@
   "title": "hi",
   "titleGenerationStatus": "failed",
   "createdAt": 1772691538117,
-  "updatedAt": 1772699697072,
-  "lastResponseAt": 1772699697072,
+  "updatedAt": 1775807302069,
+  "lastResponseAt": 1775125298044,
   "sessionId": "168caea1-471d-4976-8522-cb76cc07aebc",
   "sdkSessionId": "168caea1-471d-4976-8522-cb76cc07aebc",
   "usage": {
     "model": "haiku",
-    "inputTokens": 0,
+    "inputTokens": 27359,
     "cacheCreationInputTokens": 0,
-    "cacheReadInputTokens": 0,
+    "cacheReadInputTokens": 18594,
     "contextWindow": 200000,
-    "contextTokens": 0,
-    "percentage": 0
+    "contextTokens": 45953,
+    "percentage": 23
   }
 }

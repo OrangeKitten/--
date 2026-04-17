@@ -21,6 +21,13 @@
 
 ## [BUG #1389033 【T75】【SELINUX】【设置】音量除仪表外，其他音量调节均会回弹，多媒体及导航音量显示异常 - T75项目 - 禅道](http://zentao.gxatek.com:20080/bug-view-1389033.html)
 再转给德文了
+
+## [BUG #1393847 【T75】【德赛】【田锦峰】【实车】【USB兼容性】【0304版本】熄火睡眠点火后，音乐不会记忆播放 - T75项目 - 禅道](http://zentao.gxatek.com:20080/bug-view-1393847.html)
+EngineeringMode: ManagerFactory getConfigManager vehiclePlatform : GAC_T75_IDC_SC_260314_0244D_D, platformProductName :
+
+最新使用的是0314测试 caraudio启动慢导致的
+
+德文还是老问题
 # dsp调用vhal报错
 ## [BUG #1394316 【T75】【音频管理】连续点击静音按钮，偶发音量面板闪退底栏不显示 - T75项目 - 禅道](http://zentao.gxatek.com:20080/bug-view-1394316.html)
 调用caraudio接口超时，怀疑dsp调用超时导致d

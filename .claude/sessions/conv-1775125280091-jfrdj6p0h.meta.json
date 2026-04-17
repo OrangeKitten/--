@@ -1,0 +1,19 @@
+{
+  "id": "conv-1775125280091-jfrdj6p0h",
+  "title": "总结 周报",
+  "titleGenerationStatus": "failed",
+  "createdAt": 1775125280092,
+  "updatedAt": 1775807306347,
+  "lastResponseAt": 1775136845587,
+  "sessionId": "c67c0067-8d0a-4a0c-81f6-9eebdc9e3c3d",
+  "sdkSessionId": "c67c0067-8d0a-4a0c-81f6-9eebdc9e3c3d",
+  "usage": {
+    "model": "sonnet",
+    "inputTokens": 21860,
+    "cacheCreationInputTokens": 0,
+    "cacheReadInputTokens": 18594,
+    "contextWindow": 200000,
+    "contextTokens": 40454,
+    "percentage": 20
+  }
+}

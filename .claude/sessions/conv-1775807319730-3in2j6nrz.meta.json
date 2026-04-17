@@ -1,0 +1,20 @@
+{
+  "id": "conv-1775807319730-3in2j6nrz",
+  "title": "总结一下",
+  "titleGenerationStatus": "failed",
+  "createdAt": 1775807319741,
+  "updatedAt": 1775808509640,
+  "lastResponseAt": 1775808503902,
+  "sessionId": "11417675-b0b6-458a-9160-0b47defe6db7",
+  "sdkSessionId": "11417675-b0b6-458a-9160-0b47defe6db7",
+  "currentNote": "日报/2026-W15.md",
+  "usage": {
+    "model": "sonnet",
+    "inputTokens": 30,
+    "cacheCreationInputTokens": 0,
+    "cacheReadInputTokens": 36032,
+    "contextWindow": 200000,
+    "contextTokens": 36062,
+    "percentage": 18
+  }
+}
